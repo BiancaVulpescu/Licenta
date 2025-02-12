@@ -122,11 +122,11 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
                         errorMessage = "Passwords do not match!"
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF50696A)),
                 shape = RectangleShape,
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Text("Register", color = Color(0xFF50696A))
+                Text("Register", color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
