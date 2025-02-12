@@ -67,9 +67,15 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                 onClick = { /* Handle Login */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RectangleShape,
-                modifier = Modifier.fillMaxWidth(0.8f) // No rounded corners
+                modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 Text("Login", color=Color(0xFF50696A))
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            TextButton(onClick = {
+                    navController.navigate("register")
+            }) {
+                Text("Don't have an account, Register", color=Color.White)
             }
         }
     }
