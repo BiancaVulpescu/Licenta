@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "123904192843",
+    "project_id": "drivocare-de5d2",
+    "storage_bucket": "drivocare-de5d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123904192843:android:d97a9d616705e35f29b8ce",
+        "android_client_info": {
+          "package_name": "com.example.drivocare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNyWX8vH6hIy0wNsQFYHfj9q-fUF3qv4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

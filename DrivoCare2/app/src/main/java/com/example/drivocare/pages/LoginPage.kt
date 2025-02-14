@@ -1,17 +1,21 @@
 package com.example.drivocare.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.drivocare.AuthState
 import com.example.drivocare.AuthViewModel
 
 @Composable
@@ -19,6 +23,16 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    val authState= authViewModel.authState.observeAsState()
+    val context = LocalContext.current
+    LaunchedEffect(authState.value) {
+        when(authState.value){
+            is AuthState.Authenticated -> navController.navigate("home")
+            is AuthState.Error-> Toast.makeText(context,
+                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            else-> Unit
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -64,7 +78,9 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
             }
             Spacer(modifier = Modifier.height(60.dp))
             Button(
-                onClick = { /* Handle Login */ },
+                onClick = {
+                    authViewModel.login(email, password)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RectangleShape,
                 modifier = Modifier.fillMaxWidth(0.8f)
