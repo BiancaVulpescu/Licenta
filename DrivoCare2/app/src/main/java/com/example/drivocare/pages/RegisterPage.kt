@@ -31,8 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.drivocare.AuthState
-import com.example.drivocare.AuthViewModel
+import com.example.drivocare.viewmodels.AuthState
+import com.example.drivocare.viewmodels.AuthViewModel
 
 @Composable
 fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, authViewModel: AuthViewModel) {
