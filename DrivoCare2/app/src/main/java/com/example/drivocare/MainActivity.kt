@@ -9,13 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.example.drivocare.navigation.Navigation
 import com.example.drivocare.ui.theme.DrivoCareTheme
+import com.example.drivocare.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val authViewModel:AuthViewModel by viewModels()
+        val authViewModel: AuthViewModel by viewModels()
         setContent{
             DrivoCareTheme{
                 Scaffold(modifier= Modifier.fillMaxSize()){ innerPadding->

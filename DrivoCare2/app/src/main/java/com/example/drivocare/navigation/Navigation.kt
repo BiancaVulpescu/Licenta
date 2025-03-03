@@ -1,13 +1,14 @@
-package com.example.drivocare
+package com.example.drivocare.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.drivocare.pages.HomePage
-import com.example.drivocare.pages.LoginPage
-import com.example.drivocare.pages.RegisterPage
+import com.example.drivocare.ui.screens.HomePage
+import com.example.drivocare.ui.screens.LoginPage
+import com.example.drivocare.ui.screens.RegisterPage
+import com.example.drivocare.viewmodel.AuthViewModel
 
 @Composable
 fun Navigation(modifier: Modifier= Modifier, authViewModel: AuthViewModel) {
