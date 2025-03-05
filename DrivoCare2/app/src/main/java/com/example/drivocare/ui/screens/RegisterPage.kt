@@ -42,16 +42,6 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
     var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }  // For password mismatch error
 
-    val authState= authViewModel.authState.observeAsState()
-    val context = LocalContext.current
-    LaunchedEffect(authState.value) {
-        when(authState.value){
-            is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error-> Toast.makeText(context,
-                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
-            else-> Unit
-        }
-    }
     Box(
         modifier = Modifier
             .fillMaxSize()

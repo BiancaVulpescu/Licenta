@@ -17,13 +17,6 @@ import com.example.drivocare.viewmodel.AuthViewModel
 
 @Composable
 fun HomePage(modifier: Modifier=Modifier, navController: NavController, authViewModel: AuthViewModel) {
-    val authState= authViewModel.authState.observeAsState()
-    LaunchedEffect(authState.value) {
-        when(authState.value){
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            else-> Unit
-        }
-    }
     Column(
         modifier=modifier.fillMaxSize(),
         verticalArrangement= Arrangement.Center,
@@ -32,6 +25,7 @@ fun HomePage(modifier: Modifier=Modifier, navController: NavController, authView
         Text(text="HomePage", fontSize = 32.sp)
         TextButton(onClick = {
             authViewModel.logout()
+            //navController.navigate("login")
         }) {
             Text(text="Logout")
         }

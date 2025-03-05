@@ -17,13 +17,6 @@ import com.example.drivocare.viewmodel.AuthViewModel
 
 @Composable
 fun MyCarsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
-    val authState= authViewModel.authState.observeAsState()
-    LaunchedEffect(authState.value) {
-        when(authState.value){
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            else-> Unit
-        }
-    }
     Column(
         modifier=modifier.fillMaxSize(),
         verticalArrangement= Arrangement.Center,

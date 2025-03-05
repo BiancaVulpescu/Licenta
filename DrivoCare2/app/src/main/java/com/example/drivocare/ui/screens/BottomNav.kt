@@ -1,15 +1,18 @@
 package com.example.drivocare.ui.screens
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.drivocare.R
-
 @Composable
 fun BottomNavBar(navController: NavController) {
     val items= listOf(
@@ -27,12 +30,16 @@ fun BottomNavBar(navController: NavController) {
                     Icon(
                         painter= painterResource(id=item.icon),
                         contentDescription=item.label,
-                        tint = if (currentRoute == item.route) Color.Red else Color.White
+                        tint = if (currentRoute == item.route) Color.Red else Color.White,
+                        modifier = Modifier.size(60.dp)
                     )
                 },
                 selected=currentRoute==item.route,
                 onClick={navController.navigate(item.route)},
-                alwaysShowLabel = false
+                alwaysShowLabel = false,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color.Transparent,
+                )
             )
         }
     }
