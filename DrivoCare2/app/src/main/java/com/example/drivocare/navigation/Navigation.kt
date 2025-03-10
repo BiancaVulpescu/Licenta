@@ -11,11 +11,16 @@ import com.example.drivocare.viewmodel.AuthViewModel
 @Composable
 fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-
+    val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
     val noBottomNavRoutes = listOf("login", "register")
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
+        topBar = {
+            if (currentRoute in showTopBarRoutes) {
+                TopNavBar(navController)
+            }
+        },
         bottomBar = {
             if (currentRoute !in noBottomNavRoutes) {
                 BottomNavBar(navController)
@@ -33,6 +38,9 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
             composable("mycars") { MyCarsPage(modifier, navController,authViewModel) }
             composable("settings") { SettingsPage(modifier, navController,authViewModel) }
+            composable("myposts") { MyPostsPage(modifier, navController, authViewModel) }
+            composable("inbox") { InboxPage(modifier, navController, authViewModel) }
+            composable("newpost") { NewPostPage(modifier, navController, authViewModel) }
         }
     }
 }
