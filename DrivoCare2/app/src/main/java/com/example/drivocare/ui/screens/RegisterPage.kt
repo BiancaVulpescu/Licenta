@@ -1,4 +1,4 @@
-package com.example.drivocare.pages
+package com.example.drivocare.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -31,8 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.drivocare.AuthState
-import com.example.drivocare.AuthViewModel
+import com.example.drivocare.data.AuthState
+import com.example.drivocare.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, authViewModel: AuthViewModel) {
