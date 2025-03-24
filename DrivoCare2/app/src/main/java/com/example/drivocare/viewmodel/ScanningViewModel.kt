@@ -9,6 +9,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +22,17 @@ class ScanningViewModel : ViewModel() {
     private val _imageCapture = MutableStateFlow<ImageCapture?>(null)
     val imageCapture: StateFlow<ImageCapture?> = _imageCapture
 
+    val hasCameraPermission = MutableStateFlow(false)
     private val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun startCamera(context: Context, previewView: PreviewView) {
+    fun updatePermissionState(isGranted: Boolean) {
+        hasCameraPermission.value = isGranted
+    }
+    fun startCamera(context: Context, previewView: PreviewView, lifecycleOwner: LifecycleOwner) {
+        if (!hasCameraPermission.value) {
+            Log.e("CameraX", "Camera permission not granted.")
+            return
+        }
         val cameraProviderFuture= ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
             val cameraProvider=cameraProviderFuture.get()
@@ -36,7 +45,7 @@ class ScanningViewModel : ViewModel() {
             try{
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
-                    context as androidx.lifecycle.LifecycleOwner, cameraSelector, preview, imageCaptureInstance
+                    lifecycleOwner, cameraSelector, preview, imageCaptureInstance
                 )
             }catch (e:Exception){
                 Log.e("CameraX", "Use case binding failed", e)

@@ -68,7 +68,7 @@ fun TopNavBar(navController: NavController) {
                         painter = painterResource(id = item.icon),
                         contentDescription = item.label,
                         tint = if (currentRoute == item.route) Color(0xFF9C141E) else Color.White,
-                        modifier = Modifier.size(35.dp)
+                        modifier = Modifier.size(30.dp)
                     )
                     Spacer(modifier = Modifier.width(5.dp)) //dintre icon si text
                     Text(
