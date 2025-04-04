@@ -36,7 +36,6 @@ fun ScanningPage(
 
     val permissionState = scanningViewModel.hasCameraPermission.collectAsState()
 
-    // Check and Request Permissions
     LaunchedEffect(Unit) {
         val hasPermission = ActivityCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
@@ -54,7 +53,6 @@ fun ScanningPage(
         }
     }
 
-    // Check permission again after user interaction
     DisposableEffect(Unit) {
         val listener = context as android.app.Activity
         val callback = object : ActivityCompat.OnRequestPermissionsResultCallback {
