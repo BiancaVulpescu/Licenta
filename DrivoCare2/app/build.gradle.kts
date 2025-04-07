@@ -41,7 +41,9 @@ android {
     buildFeatures {
         compose = true
         viewBinding= true
+        mlModelBinding = true
     }
+
 }
 
 dependencies {
@@ -59,6 +61,9 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.firestore)
+    implementation(libs.tensorflow.lite.support)
+    implementation(libs.tensorflow.lite.metadata)
+    implementation(libs.tensorflow.lite.gpu)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
