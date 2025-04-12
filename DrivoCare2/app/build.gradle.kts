@@ -43,6 +43,9 @@ android {
         viewBinding= true
         mlModelBinding = true
     }
+    androidResources {
+        noCompress += "tflite"
+    }
 
 }
 
@@ -61,9 +64,11 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.firestore)
-    implementation(libs.tensorflow.lite.support)
-    implementation(libs.tensorflow.lite.metadata)
-    implementation(libs.tensorflow.lite.gpu)
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support.v044)
+    implementation(libs.tensorflow.lite.metadata.v044)
+    implementation(libs.tensorflow.lite.gpu.v2120)
+    implementation(libs.tensorflow.lite.select.tf.ops)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

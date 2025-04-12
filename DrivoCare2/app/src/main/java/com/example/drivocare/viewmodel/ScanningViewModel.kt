@@ -18,11 +18,16 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.example.drivocare.ml.WarningLightModelMare
 import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import com.example.drivocare.ml.WarningLightModelBun
+
 
 
 class ScanningViewModel : ViewModel() {
@@ -71,35 +76,48 @@ class ScanningViewModel : ViewModel() {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Log.d("CameraX", "Photo saved: ${photoFile.absolutePath}")
 
-                    // Step 1: Decode image
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     val resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
 
-                    // Step 2: Convert Bitmap to ByteBuffer
+
                     val byteBuffer = convertBitmapToByteBuffer(resized)
 
-                    // Step 3: Load model and run inference
-                    val model = WarningLightModelMare.newInstance(context)
+                    try {
+                        // Load and run the model
+                        val model = WarningLightModelBun.newInstance(context)
 
-                    val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
-                    inputFeature0.loadBuffer(byteBuffer)
+                        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
+                        inputFeature0.loadBuffer(byteBuffer)
 
-                    val outputs = model.process(inputFeature0)
-                    val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+                        val outputs = model.process(inputFeature0)
+                        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
 
-                    val confidences = outputFeature0.floatArray
-                    Log.d("Prediction", "Confidences: ${confidences.joinToString()}")
+                        val confidences = outputFeature0.floatArray
+                        Log.d("Prediction", "Confidences: ${confidences.joinToString()}")
 
-                    val maxIdx = confidences.indices.maxByOrNull { confidences[it] } ?: -1
+                        val maxIdx = confidences.indices.maxByOrNull { confidences[it] } ?: -1
+                        val confidenceScore = confidences[maxIdx] * 100
+                        val labels = listOf(
+                            "abs", "air_suspension", "airbag_indicator", "battery", "brake",
+                            "catalytic_converter", "check_engine", "engine_temperature",
+                            "fuel_filter", "glow_plug", "high_beam_light", "hood_open",
+                            "low_fuel", "master_warning", "oil_pressure", "parking_brake",
+                            "powertrain", "seat_belt", "tire_pressure", "traction_control",
+                            "traction_control_off", "transmission_temperature"
+                        )
+                        val result = if (confidenceScore >= 70.0) {
+                            labels.getOrNull(maxIdx) ?: "Unknown"
+                        } else {
+                            "Scan again the image isn't recognized"
+                        }
 
-                    val labels = listOf("abs", "air_suspension", "airbag_indicator", "battery", "brake", "catalytic_converter", "check_engine",
-                        "engine_temperature", "front_fog_light", "fuel_filter", "glow_plug", "headlight_range", "high_beam_light", "hood_open", "low_beam_light",
-                        "low_fuel", "master_warning", "oil_pressure", "parking_brake", "powertrain", "rear_fog_light", "seat_belt", "tire_pressure", "traction_control", "traction_control_off", "transmission_temperature")
-                    val result = labels.getOrNull(maxIdx) ?: "Unknown"
+                        model.close()
+                        onResult(result)
 
-                    model.close()
-
-                    onResult(result)
+                    } catch (e: Exception) {
+                        Log.e("TFLite", "Model inference failed", e)
+                        onResult("Model Error")
+                    }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -109,7 +127,6 @@ class ScanningViewModel : ViewModel() {
             }
         )
     }
-
     private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
         val byteBuffer = ByteBuffer.allocateDirect(4 * 224 * 224 * 3)
         byteBuffer.order(ByteOrder.nativeOrder())
@@ -120,17 +137,18 @@ class ScanningViewModel : ViewModel() {
         var pixelIndex = 0
         for (i in 0 until 224) {
             for (j in 0 until 224) {
-                val pixelValue = intValues[pixelIndex++]
+                val pixel = intValues[pixelIndex++]
 
-                // Normalize RGB values to [0, 1]
-                byteBuffer.putFloat(((pixelValue shr 16 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((pixelValue shr 8 and 0xFF) / 255.0f))
-                byteBuffer.putFloat(((pixelValue and 0xFF) / 255.0f))
+                byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255.0f) // R
+                byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255.0f)  // G
+                byteBuffer.putFloat((pixel and 0xFF) / 255.0f)          // B
             }
         }
 
+        byteBuffer.rewind()
         return byteBuffer
     }
+
 
     override fun onCleared() {
         super.onCleared()
