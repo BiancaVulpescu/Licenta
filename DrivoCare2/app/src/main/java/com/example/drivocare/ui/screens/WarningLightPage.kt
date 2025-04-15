@@ -1,21 +1,28 @@
 package com.example.drivocare.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.drivocare.R
 import com.example.drivocare.viewmodel.WarningLightViewModel
 import coil.compose.rememberAsyncImagePainter
+
 @Composable
-fun WarningLightPage(id:String, viewModel: WarningLightViewModel = viewModel()) {
+fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel()) {
     val warning by viewModel.warning.collectAsState()
 
     LaunchedEffect(id) {
@@ -26,23 +33,79 @@ fun WarningLightPage(id:String, viewModel: WarningLightViewModel = viewModel()) 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(light.imageUrl),
-                contentDescription = light.symbolName,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(light.symbolName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(light.description, style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Fix: ${light.fixDescription}", style = MaterialTheme.typography.bodySmall)
+                    .background(Color(0xFF479195))
+                    .padding(16.dp)
+            ) {
+                Button(
+                    onClick = { /* TODO: Add calendar functionality */ },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.calendar),
+                        contentDescription = "Add to calendar",
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Add to calendar", color = Color.White)
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(light.imageUrl),
+                    contentDescription = light.symbolName,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentScale = ContentScale.Fit
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = light.symbolName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF9C141E)
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Description",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = light.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.DarkGray
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "How to fix",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = light.fixDescription,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.DarkGray
+                )
+            }
         }
     } ?: Text("Loading...")
 }
