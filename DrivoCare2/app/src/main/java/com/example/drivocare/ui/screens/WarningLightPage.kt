@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,14 +40,14 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
                     onClick = { /* TODO: Add calendar functionality */ },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
-                    modifier = Modifier.wrapContentWidth()
+                    modifier = Modifier.wrapContentWidth(),
+                    shape = RectangleShape
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.calendar),
@@ -66,32 +67,40 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(light.imageUrl),
-                    contentDescription = light.symbolName,
-                    modifier = Modifier
-                        .size(80.dp),
-                    contentScale = ContentScale.Fit
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = light.symbolName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9C141E),
-                    textAlign = TextAlign.Center
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(light.imageUrl),
+                            contentDescription = light.symbolName,
+                            modifier = Modifier.size(80.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = light.symbolName,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF9C141E),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Description",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9C141E)
+                    color = Color(0xFF9C141E),
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -106,7 +115,8 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                     text = "How to fix",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9C141E)
+                    color = Color(0xFF9C141E),
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
