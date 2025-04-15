@@ -112,7 +112,7 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "How to fix",
+                    text = "What you should do",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF9C141E),
