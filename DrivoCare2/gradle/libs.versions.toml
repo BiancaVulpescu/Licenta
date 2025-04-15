@@ -1,29 +1,31 @@
 [versions]
 agp = "8.9.1"
-cameraLifecycle = "1.4.1"
+cameraLifecycle = "1.4.2"
+coilCompose = "2.4.0"
 guava = "32.1.3-android"
 kotlin = "2.0.0"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.0"
-composeBom = "2024.04.01"
-navigationCompose = "2.8.6"
+activityCompose = "1.10.1"
+composeBom = "2025.04.00"
+navigationCompose = "2.8.9"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.2.0"
 runtimeLivedata = "1.7.8"
-firebaseFirestoreKtx = "25.1.2"
-firebaseFirestore = "25.1.2"
+firebaseFirestoreKtx = "25.1.3"
+firebaseFirestore = "25.1.3"
 tensorflowLite = "2.13.0"
 tensorflowLiteGpuVersion = "2.12.0"
 tensorflowLiteMetadataVersion = "0.4.4"
 tensorflowLiteSelectTfOps = "2.12.0"
-tensorflowLiteSupport = "0.1.0"
-tensorflowLiteMetadata = "0.1.0"
-tensorflowLiteGpu = "2.3.0"
+tensorflowLiteSupport = "0.4.4"
+tensorflowLiteMetadata = "0.4.4"
+tensorflowLiteGpu = "2.12.0"
 tensorflowLiteSupportVersion = "0.4.4"
+firebaseStorageKtx = "21.0.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraLifecycle" }
@@ -33,6 +35,7 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "cameraLifecycle" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraLifecycle" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -53,13 +56,21 @@ androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtim
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-gpu-v2120 = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLiteGpuVersion" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-metadata-v044 = { module = "org.tensorflow:tensorflow-lite-metadata", version.ref = "tensorflowLiteMetadataVersion" }
 tensorflow-lite-select-tf-ops = { module = "org.tensorflow:tensorflow-lite-select-tf-ops", version.ref = "tensorflowLiteSelectTfOps" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-support = { group = "org.tensorflow", name = "tensorflow-lite-support", version.ref = "tensorflowLiteSupport" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-metadata = { group = "org.tensorflow", name = "tensorflow-lite-metadata", version.ref = "tensorflowLiteMetadata" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-gpu = { group = "org.tensorflow", name = "tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
+#noinspection SimilarGradleDependency
 tensorflow-lite-support-v044 = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupportVersion" }
+firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
