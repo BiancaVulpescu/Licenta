@@ -93,9 +93,6 @@ fun ScanningPage(
             ) {
                 CaptureButton(
                     text = "Scan",
-<<<<<<< Updated upstream
-                    onClick = { scanningViewModel.capturePhoto(context) }
-=======
                     onClick = { scanningViewModel.capturePhoto(context) { result ->
                         if (result != "Model Error" && result != "Scan again the image isn't recognized") {
                             navController.navigate("warning/$result")
@@ -103,7 +100,6 @@ fun ScanningPage(
                             prediction = result
                         }
                     }}
->>>>>>> Stashed changes
                 )
             }
         } else {

@@ -25,6 +25,7 @@ tensorflowLiteSupport = "0.4.4"
 tensorflowLiteMetadata = "0.4.4"
 tensorflowLiteGpu = "2.12.0"
 tensorflowLiteSupportVersion = "0.4.4"
+firebaseStorageKtx = "21.0.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraLifecycle" }
