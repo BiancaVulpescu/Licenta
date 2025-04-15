@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
@@ -26,11 +27,12 @@ import coil.compose.rememberAsyncImagePainter
 @Composable
 fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel()) {
     val warning by viewModel.warning.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(id) {
         viewModel.loadWarningLightById(id)
     }
-
+    Box(modifier = Modifier.fillMaxSize()) {
     warning?.let { light ->
         Column(
             modifier = Modifier
@@ -127,5 +129,21 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                 )
             }
         }
-    } ?: Text("Loading...")
+    }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F5))
+                    .blur(8.dp)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(50.dp),
+                    color = Color(0xFF9C141E)
+                )
+            }
+        }
+    }
 }
