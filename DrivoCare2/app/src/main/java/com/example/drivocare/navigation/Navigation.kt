@@ -41,6 +41,11 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             composable("myposts") { MyPostsPage(modifier, navController, authViewModel) }
             composable("inbox") { InboxPage(modifier, navController, authViewModel) }
             composable("newpost") { NewPostPage(modifier, navController, authViewModel) }
+            composable("warning/{id}") { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id") ?: ""
+                WarningLightPage(id = id)
+            }
+
         }
     }
 }
