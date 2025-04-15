@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,49 +34,56 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color(0xFFF5F5F5))
                 .verticalScroll(rememberScrollState())
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF479195))
-                    .padding(16.dp)
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Button(
                     onClick = { /* TODO: Add calendar functionality */ },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
-                    modifier = Modifier.align(Alignment.TopEnd)
+                    modifier = Modifier.wrapContentWidth()
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.calendar),
                         contentDescription = "Add to calendar",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add to calendar", color = Color.White)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        "Add to calendar",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(light.imageUrl),
                     contentDescription = light.symbolName,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
+                        .size(80.dp),
                     contentScale = ContentScale.Fit
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = light.symbolName,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF9C141E)
+                    color = Color(0xFF9C141E),
+                    textAlign = TextAlign.Center
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -83,13 +91,14 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                     text = "Description",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color(0xFF9C141E)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = light.description,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray
+                    color = Color.DarkGray,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -97,13 +106,14 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                     text = "How to fix",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color(0xFF9C141E)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = light.fixDescription,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray
+                    color = Color.DarkGray,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
