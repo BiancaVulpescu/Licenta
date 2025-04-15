@@ -41,7 +41,12 @@ android {
     buildFeatures {
         compose = true
         viewBinding= true
+        mlModelBinding = true
     }
+    androidResources {
+        noCompress += "tflite"
+    }
+
 }
 
 dependencies {

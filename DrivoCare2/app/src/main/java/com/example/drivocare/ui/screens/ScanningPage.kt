@@ -33,7 +33,7 @@ fun ScanningPage(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
-
+    var prediction by remember { mutableStateOf<String?>(null) }
     val permissionState = scanningViewModel.hasCameraPermission.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -85,6 +85,15 @@ fun ScanningPage(
                 factory = { previewView },
                 modifier = Modifier.fillMaxSize()
             )
+            prediction?.let {
+                Text(
+                    text = "Detected: $it",
+                    color = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 100.dp)
+                )
+            }
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

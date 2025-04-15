@@ -1,6 +1,8 @@
 package com.example.drivocare.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -16,6 +18,16 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import com.example.drivocare.ml.WarningLightModelBun
+
 
 
 class ScanningViewModel : ViewModel() {
@@ -53,26 +65,91 @@ class ScanningViewModel : ViewModel() {
         }, ContextCompat.getMainExecutor(context))
     }
 
-    fun capturePhoto(context: Context) {
-        val imageCapture = _imageCapture.value
-        if (imageCapture == null) {
-            Log.e("CameraX", "ImageCapture is not initialized yet")
-            return
-        }
+    fun capturePhoto(context: Context, onResult: (String) -> Unit) {
+        val imageCapture = _imageCapture.value ?: return
         val photoFile = File(context.externalMediaDirs.firstOrNull(), "${System.currentTimeMillis()}.jpg")
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(context), object :
-            ImageCapture.OnImageSavedCallback {
-            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                Log.d("CameraX", "Photo saved: ${photoFile.absolutePath}")
-            }
 
-            override fun onError(exception: ImageCaptureException) {
-                Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
+        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(context),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    Log.d("CameraX", "Photo saved: ${photoFile.absolutePath}")
+
+                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                    val resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
+
+
+                    val byteBuffer = convertBitmapToByteBuffer(resized)
+
+                    try {
+                        // Load and run the model
+                        val model = WarningLightModelBun.newInstance(context)
+
+                        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
+                        inputFeature0.loadBuffer(byteBuffer)
+
+                        val outputs = model.process(inputFeature0)
+                        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+
+                        val confidences = outputFeature0.floatArray
+                        Log.d("Prediction", "Confidences: ${confidences.joinToString()}")
+
+                        val maxIdx = confidences.indices.maxByOrNull { confidences[it] } ?: -1
+                        val confidenceScore = confidences[maxIdx] * 100
+                        val labels = listOf(
+                            "abs", "air_suspension", "airbag_indicator", "battery", "brake",
+                            "catalytic_converter", "check_engine", "engine_temperature",
+                            "fuel_filter", "glow_plug", "high_beam_light", "hood_open",
+                            "low_fuel", "master_warning", "oil_pressure", "parking_brake",
+                            "powertrain", "seat_belt", "tire_pressure", "traction_control",
+                            "traction_control_off", "transmission_temperature"
+                        )
+                        val result = if (confidenceScore >= 70.0) {
+                            labels.getOrNull(maxIdx) ?: "Unknown"
+                        } else {
+                            "Scan again the image isn't recognized"
+                        }
+
+                        model.close()
+                        onResult(result)
+
+                    } catch (e: Exception) {
+                        Log.e("TFLite", "Model inference failed", e)
+                        onResult("Model Error")
+                    }
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
+                    onResult("Error")
+                }
             }
-        })
+        )
     }
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(4 * 224 * 224 * 3)
+        byteBuffer.order(ByteOrder.nativeOrder())
+
+        val intValues = IntArray(224 * 224)
+        bitmap.getPixels(intValues, 0, 224, 0, 0, 224, 224)
+
+        var pixelIndex = 0
+        for (i in 0 until 224) {
+            for (j in 0 until 224) {
+                val pixel = intValues[pixelIndex++]
+
+                byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255.0f) // R
+                byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255.0f)  // G
+                byteBuffer.putFloat((pixel and 0xFF) / 255.0f)          // B
+            }
+        }
+
+        byteBuffer.rewind()
+        return byteBuffer
+    }
+
+
     override fun onCleared() {
         super.onCleared()
         cameraExecutor.shutdown()
