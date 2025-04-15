@@ -3,6 +3,7 @@ package com.example.drivocare.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.drivocare.data.WarningLight
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ class WarningLightViewModel : ViewModel() {
 
     fun loadWarningLightById(id: String) {
         val documentId = id
+        Log.d("WarningLightVM", "Trying to fetch: WarningLights/$documentId")
         firestore.collection("WarningLights").document(documentId).get()
             .addOnSuccessListener { doc ->
                 if(doc.exists()){
@@ -25,7 +27,7 @@ class WarningLightViewModel : ViewModel() {
                     val description = doc.getString("Description") ?: ""
                     val fixDescription = doc.getString("FixDescription") ?: ""
 
-                    val imageRef = storage.reference.child("WarningLights/$documentId.png")
+                    val imageRef = storage.reference.child("WarningLights/$documentId.jpg")
 
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
                         _warning.value = WarningLight(

@@ -27,7 +27,7 @@ import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import com.example.drivocare.ml.WarningLightModelBun
-
+import com.google.firebase.auth.FirebaseAuth
 
 
 class ScanningViewModel : ViewModel() {
