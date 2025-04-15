@@ -16,10 +16,13 @@ class WarningLightViewModel : ViewModel() {
     private val firestore = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     fun loadWarningLightById(id: String) {
         val documentId = id
-        Log.d("WarningLightVM", "Trying to fetch: WarningLights/$documentId")
-        firestore.collection("WarningLights").document(documentId).get()
+        _isLoading.value = true
+         firestore.collection("WarningLights").document(documentId).get()
             .addOnSuccessListener { doc ->
                 if(doc.exists()){
 
@@ -38,9 +41,11 @@ class WarningLightViewModel : ViewModel() {
                         )
                     }
                 }
+                _isLoading.value = false
             }
             .addOnFailureListener {
                 Log.e("WarningLightVM", "Failed to fetch warning light: ${it.message}")
+                _isLoading.value = false
             }
     }
 }
