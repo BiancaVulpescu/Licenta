@@ -51,12 +51,15 @@ fun AddCarPage(
             Text(
                 "Brand",
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
             OutlinedTextField(
                 value = addCarViewModel.brand.value,
                 onValueChange = { addCarViewModel.brand.value = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -68,12 +71,15 @@ fun AddCarPage(
             Text(
                 "Model",
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
             OutlinedTextField(
                 value = addCarViewModel.model.value,
                 onValueChange = { addCarViewModel.model.value = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -85,12 +91,15 @@ fun AddCarPage(
             Text(
                 "An productie",
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
             OutlinedTextField(
                 value = addCarViewModel.year.value,
                 onValueChange = { addCarViewModel.year.value = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -102,12 +111,15 @@ fun AddCarPage(
             Text(
                 "Nr. inmatriculare",
                 style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
             OutlinedTextField(
                 value = addCarViewModel.number.value,
                 onValueChange = { addCarViewModel.number.value = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -119,6 +131,7 @@ fun AddCarPage(
             Text(
                 "Add events to calendar",
                 style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195),
                 modifier = Modifier.clickable {
                     navController.navigate("addevent") { launchSingleTop = true }
@@ -149,11 +162,17 @@ fun AddCarPage(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF479195)
                             )
-                            Text(
-                                dateFormat.format(event.startDate.toDate()),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.DarkGray
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFF479195))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    dateFormat.format(event.startDate.toDate()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White
+                                )
+                            }
                         }
                         Column {
                             Text(
@@ -161,11 +180,17 @@ fun AddCarPage(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFF479195)
                             )
-                            Text(
-                                dateFormat.format(event.endDate.toDate()),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.DarkGray
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFF479195))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    dateFormat.format(event.endDate.toDate()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }
@@ -175,30 +200,36 @@ fun AddCarPage(
             Spacer(modifier = Modifier.height(24.dp))
             
             // Save button
-            Button(
-                onClick = {
-                    isLoading = true
-                    addCarViewModel.saveCar(
-                        onSuccess = { carId ->
-                            isLoading = false
-                            Toast.makeText(context, "Car added", Toast.LENGTH_SHORT).show()
-                            navController.navigate("mycars")
-                        },
-                        onError = {
-                            isLoading = false
-                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
+            Box(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RectangleShape
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "Salveaza",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Button(
+                    onClick = {
+                        isLoading = true
+                        addCarViewModel.saveCar(
+                            onSuccess = { carId ->
+                                isLoading = false
+                                Toast.makeText(context, "Car added", Toast.LENGTH_SHORT).show()
+                                navController.navigate("mycars")
+                            },
+                            onError = {
+                                isLoading = false
+                                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
+                    modifier = Modifier.width(200.dp),
+                    shape = RectangleShape
+                ) {
+                    Text(
+                        "Salveaza",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
 
