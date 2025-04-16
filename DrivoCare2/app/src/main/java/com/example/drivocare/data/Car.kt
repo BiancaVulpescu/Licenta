@@ -1,8 +1,9 @@
 package com.example.drivocare.data
 
 data class Car (
-    val Brand: String = "",
-    val Year: Number ,
-    val Model: String = "",
-    val Number: String = ""
+    val brand: String = "",
+    val year: Int = 2010 ,
+    val model: String = "",
+    val number: String = "",
+    val id : String = ""
 )

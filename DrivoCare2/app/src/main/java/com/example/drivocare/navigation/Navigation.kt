@@ -45,6 +45,15 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
                 val id = backStackEntry.arguments?.getString("id") ?: ""
                 WarningLightPage(id = id)
             }
+            composable("addcar") { AddCarPage(modifier, navController, authViewModel) }
+            composable("addevent/{carId}") { backStackEntry ->
+                val carId = backStackEntry.arguments?.getString("carId")
+                AddEventPage(
+                    navController = navController,
+                    carId = carId
+                )
+            }
+            composable("addevent") { AddEventPage(navController = navController, carId=null) }
 
         }
     }
