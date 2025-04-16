@@ -1,5 +1,6 @@
 package com.example.drivocare.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -36,9 +37,11 @@ class AddCarViewModel : ViewModel() {
 
             pendingEvents.forEach { event ->
                 carRef.collection("events").add(event)
+                    .addOnFailureListener { Log.e("SaveCar", "Failed to save event: ${it.message}") }
             }
 
             onSuccess(carId)
         }, onError = onError)
+
     }
 }

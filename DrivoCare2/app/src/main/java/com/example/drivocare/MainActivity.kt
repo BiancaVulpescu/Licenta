@@ -11,17 +11,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.example.drivocare.navigation.Navigation
 import com.example.drivocare.ui.theme.DrivoCareTheme
+import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val authViewModel: AuthViewModel by viewModels()
+        val addCarViewModel: AddCarViewModel by viewModels()
         setContent{
             DrivoCareTheme{
                 Scaffold(modifier= Modifier.fillMaxSize()){ innerPadding->
-                    Navigation(modifier=Modifier.padding(innerPadding), authViewModel=authViewModel)
+                    Navigation(modifier=Modifier.padding(innerPadding), authViewModel=authViewModel, addCarViewModel=addCarViewModel)
                 }
             }
         }

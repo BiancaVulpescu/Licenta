@@ -29,18 +29,22 @@ import com.example.drivocare.R
 
 
 @Composable
-fun AddCarPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, AddCarViewModel: AddCarViewModel= viewModel() ) {
+fun AddCarPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel ) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.padding(16.dp)) {
-        OutlinedTextField(value = AddCarViewModel.brand.value, onValueChange = { AddCarViewModel.brand.value = it }, label = { Text("Brand") })
-        OutlinedTextField(value = AddCarViewModel.model.value, onValueChange = { AddCarViewModel.model.value = it }, label = { Text("Model") })
-        OutlinedTextField(value = AddCarViewModel.year.value, onValueChange = { AddCarViewModel.year.value = it }, label = { Text("Year") })
-        OutlinedTextField(value = AddCarViewModel.number.value, onValueChange = { AddCarViewModel.number.value = it }, label = { Text("Number") })
+        OutlinedTextField(value = addCarViewModel.brand.value, onValueChange = { addCarViewModel.brand.value = it }, label = { Text("Brand") })
+        OutlinedTextField(value = addCarViewModel.model.value, onValueChange = { addCarViewModel.model.value = it }, label = { Text("Model") })
+        OutlinedTextField(value = addCarViewModel.year.value, onValueChange = { addCarViewModel.year.value = it }, label = { Text("Year") })
+        OutlinedTextField(value = addCarViewModel.number.value, onValueChange = { addCarViewModel.number.value = it }, label = { Text("Number") })
+        Text("Pending Events:", style = MaterialTheme.typography.titleMedium)
+        addCarViewModel.pendingEvents.forEach { event ->
+            Text("• ${event.title} (${event.startDate.toDate()} - ${event.endDate.toDate()})")
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
         Button(
-            onClick = {  navController.navigate("addevent") },
+            onClick = {  navController.navigate("addevent") { launchSingleTop=true } },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
             modifier = Modifier.wrapContentWidth(),
             shape = RectangleShape
@@ -59,7 +63,7 @@ fun AddCarPage(modifier: Modifier = Modifier, navController: NavController, auth
             )
         }
         Button(onClick = {
-            AddCarViewModel.saveCar(
+            addCarViewModel.saveCar(
                 onSuccess = {carId->
                     Toast.makeText(context, "Car added", Toast.LENGTH_SHORT).show()
                     navController.navigate("mycars")

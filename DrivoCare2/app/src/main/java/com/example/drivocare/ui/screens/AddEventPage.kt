@@ -1,5 +1,6 @@
 package com.example.drivocare.ui.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +23,7 @@ import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AddEventViewModel
 
 @Composable
-fun AddEventPage(carId: String?, navController: NavController, eventViewModel: AddEventViewModel = viewModel(),  carViewModel: AddCarViewModel = viewModel()) {
+fun AddEventPage(carId: String?, navController: NavController, eventViewModel: AddEventViewModel = viewModel(),  carViewModel: AddCarViewModel) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -47,15 +48,15 @@ fun AddEventPage(carId: String?, navController: NavController, eventViewModel: A
                     val event = result.getOrNull()!!
                     if (carId == null) {
                         carViewModel.addPendingEvent(event)
-                        Toast.makeText(context, "Event added to unsaved car", Toast.LENGTH_SHORT)
-                            .show()
-                        navController.popBackStack()
+                        Toast.makeText(context, "Event added to unsaved car", Toast.LENGTH_SHORT).show()
+                        navController.navigate("addcar")
                     } else {
                         eventViewModel.saveEvent(
                             carId = carId,
                             onSuccess = {
                                 Toast.makeText(context, "Event added", Toast.LENGTH_SHORT).show()
-                                navController.popBackStack()
+                                Log.d("Event added in pending", "event added in pending")
+                                navController.navigate("addcar")
                             },
                             onError = {
                                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
