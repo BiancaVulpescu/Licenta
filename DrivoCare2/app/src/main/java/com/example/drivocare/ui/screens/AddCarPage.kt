@@ -154,14 +154,18 @@ fun AddCarPage(
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Column {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
                                 "data inceput",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF479195)
+                                color = Color(0xFF479195),
+                                textAlign = TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
                                     .background(Color(0xFF479195))
@@ -174,12 +178,17 @@ fun AddCarPage(
                                 )
                             }
                         }
-                        Column {
+                        Spacer(modifier = Modifier.width(30.dp))
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                             Text(
                                 "data expirare",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF479195)
+                                color = Color(0xFF479195),
+                                textAlign = TextAlign.Center
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier
                                     .background(Color(0xFF479195))
