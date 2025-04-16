@@ -3,9 +3,9 @@ package com.example.drivocare.data
 import com.google.firebase.Timestamp
 
 data class Event (
-        val Description: String = "",
-        val NotificationSet: Boolean = false,
-        val Title: String = "",
-        val StartDate: Timestamp ,
-        val EndDate: Timestamp
+        val description: String = "",
+        val notificationSet: Boolean = false,
+        val title: String ,
+        val startDate: Timestamp ,
+        val endDate: Timestamp
     )

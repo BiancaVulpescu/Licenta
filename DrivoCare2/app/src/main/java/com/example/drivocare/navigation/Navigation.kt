@@ -6,10 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.*
 import com.example.drivocare.ui.screens.*
+import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 
 @Composable
-fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
+fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel) {
     val navController = rememberNavController()
     val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
     val noBottomNavRoutes = listOf("login", "register")
@@ -45,6 +46,15 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
                 val id = backStackEntry.arguments?.getString("id") ?: ""
                 WarningLightPage(id = id)
             }
+            composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }
+            composable("addevent/{carId}") { backStackEntry ->
+                val carId = backStackEntry.arguments?.getString("carId")
+                AddEventPage(
+                    navController = navController,
+                    carId = carId.takeIf { it?.isNotBlank() == true }, carViewModel = addCarViewModel
+                )
+            }
+            composable("addevent") { AddEventPage(navController = navController, carId=null, carViewModel = addCarViewModel) }
 
         }
     }
