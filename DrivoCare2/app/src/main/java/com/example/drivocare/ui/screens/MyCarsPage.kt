@@ -185,6 +185,21 @@ fun MyCarsPage(
                 }
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (cars.value.isNotEmpty()) {
+            Button(
+                onClick = {
+                    val selectedCarId = cars.value[selectedCarIndex].id
+                    navController.navigate("addevent/$selectedCarId")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape
+            ) {
+                Text("Add Event", color = Color.White)
+            }
+        }
     }
 }
 

@@ -55,8 +55,7 @@ fun AddEventPage(carId: String?, navController: NavController, eventViewModel: A
                             carId = carId,
                             onSuccess = {
                                 Toast.makeText(context, "Event added", Toast.LENGTH_SHORT).show()
-                                Log.d("Event added in pending", "event added in pending")
-                                navController.navigate("addcar")
+                                navController.navigate("mycars")
                             },
                             onError = {
                                 Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
