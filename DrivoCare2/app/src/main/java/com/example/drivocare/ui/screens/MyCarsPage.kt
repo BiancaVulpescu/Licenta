@@ -1,5 +1,6 @@
 package com.example.drivocare.ui.screens
 
+import android.widget.CalendarView
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -24,6 +25,9 @@ import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drivocare.viewmodel.CalendarViewModel
+import java.time.YearMonth
+import java.time.ZoneId
 
 @Composable
 fun MyCarsPage(
@@ -36,7 +40,9 @@ fun MyCarsPage(
     val cars = viewModel.cars.observeAsState(listOf())
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedCarIndex by remember { mutableStateOf(0) }
+    val selectedCarIndex by viewModel.selectedCarIndex
+    val events = viewModel.events.observeAsState(listOf())
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -44,10 +50,17 @@ fun MyCarsPage(
     )
 
     LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            is AuthState.Authenticated -> viewModel.loadCarsForCurrentUser()
-            else -> Unit
+        if (authState.value is AuthState.Authenticated) {
+            viewModel.loadCarsForCurrentUser()
+        } else if (authState.value is AuthState.Unauthenticated) {
+            navController.navigate("login")
+        }
+    }
+
+    LaunchedEffect(viewModel.selectedCarIndex.value, cars.value) {
+        val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
+        if (currentCar != null) {
+            viewModel.loadEventsForCar(currentCar.id)
         }
     }
 
@@ -82,14 +95,15 @@ fun MyCarsPage(
                     )
                     Spacer(modifier = Modifier.width(25.dp))
                     Column {
+                        val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
                         Text(
-                            text = if (cars.value.isNotEmpty()) "${cars.value[selectedCarIndex].brand} ${cars.value[selectedCarIndex].model}" else "No car selected",
+                            text = currentCar?.let { "${it.brand} ${it.model}" } ?: "No car selected",
                             color = Color.White,
                             style = MaterialTheme.typography.titleMedium
                         )
-                        if (cars.value.isNotEmpty()) {
+                        currentCar?.let {
                             Text(
-                                text = cars.value[selectedCarIndex].number,
+                                text = it.number,
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleSmall
                             )
@@ -117,7 +131,7 @@ fun MyCarsPage(
                     if (index != selectedCarIndex) {
                         Button(
                             onClick = {
-                                selectedCarIndex = index
+                                viewModel.selectedCarIndex.value = index
                                 expanded = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
@@ -190,7 +204,7 @@ fun MyCarsPage(
         if (cars.value.isNotEmpty()) {
             Button(
                 onClick = {
-                    val selectedCarId = cars.value[selectedCarIndex].id
+                    val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
                     navController.navigate("addevent/$selectedCarId")
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
@@ -200,6 +214,13 @@ fun MyCarsPage(
                 Text("Add Event", color = Color.White)
             }
         }
+        CalendarViewModel (
+            month = currentMonth,
+            eventDates = events.value.map { it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() },
+            onMonthChange = { direction ->
+                currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
+            }
+        )
     }
 }
 
