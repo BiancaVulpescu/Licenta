@@ -1,5 +1,6 @@
 package com.example.drivocare.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.drivocare.data.Event
@@ -16,20 +17,24 @@ class AddEventViewModel : ViewModel() {
     var title = mutableStateOf("")
     var startDate = mutableStateOf("")
     var endDate = mutableStateOf("")
+    var startTime = mutableStateOf("")
+    var endTime= mutableStateOf("")
 
     fun buildValidatedEvent(): Result<Event> {
-        val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
+        val startDateTimeStr="${startDate.value.trim()} ${startTime.value.trim().ifBlank { "00:00" }}"
+        val endDateTimeStr="${endDate.value.trim()} ${endTime.value.trim().ifBlank { "00:00" }}"
+        Log.d("TimestampDebug", "Parsing start: '$startDateTimeStr'")
         val start = try {
-            Timestamp(formatter.parse(startDate.value)!!)
+            Timestamp(dateFormat.parse(startDateTimeStr)!!)
         } catch (e: Exception) {
-            return Result.failure(Exception("Start date must be in dd-MM-yyyy format"))
+            return Result.failure(Exception("Start date/time must be in dd-MM-yyyy/HH:mm format"))
         }
 
         val end = try {
-            Timestamp(formatter.parse(endDate.value)!!)
+            Timestamp(dateFormat.parse(endDateTimeStr)!!)
         } catch (e: Exception) {
-            return Result.failure(Exception("End date must be in dd-MM-yyyy format"))
+            return Result.failure(Exception("End date/time must be in dd-MM-yyyy/HH:mm format"))
         }
 
         if (title.value.isBlank()) {

@@ -31,6 +31,8 @@ fun AddEventPage(carId: String?, navController: NavController, eventViewModel: A
         OutlinedTextField(value = eventViewModel.description.value, onValueChange = { eventViewModel.description.value = it }, label = { Text("Description (optional)") })
         OutlinedTextField(value = eventViewModel.startDate.value, onValueChange = { eventViewModel.startDate.value = it }, label = { Text("Start Date (dd-MM-yyyy)") })
         OutlinedTextField(value = eventViewModel.endDate.value, onValueChange = { eventViewModel.endDate.value = it }, label = { Text("End Date (dd-MM-yyyy)") })
+        OutlinedTextField(value = eventViewModel.startTime.value, onValueChange = { eventViewModel.startTime.value = it }, label = { Text("Start Time (HH:mm)") })
+        OutlinedTextField(value = eventViewModel.endTime.value, onValueChange = { eventViewModel.endTime.value = it }, label = { Text("End Time (HH:mm)") })
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
