@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -43,6 +44,7 @@ fun MyCarsPage(
     val selectedCarIndex by viewModel.selectedCarIndex
     val events = viewModel.events.observeAsState(listOf())
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    val isLoading by viewModel.isLoading
 
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -63,164 +65,190 @@ fun MyCarsPage(
             viewModel.loadEventsForCar(currentCar.id)
         }
     }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Button(
-            onClick = { expanded = !expanded },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RectangleShape,
-            contentPadding = PaddingValues(5.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5))
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
         ) {
-            Row(
+            Button(
+                onClick = { expanded = !expanded },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                shape = RectangleShape,
+                contentPadding = PaddingValues(5.dp)
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.car),
-                        contentDescription = "Car icon",
-                        tint = Color.Black,
-                        modifier = Modifier.size(45.dp)
-                    )
-                    Spacer(modifier = Modifier.width(25.dp))
-                    Column {
-                        val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
-                        Text(
-                            text = currentCar?.let { "${it.brand} ${it.model}" } ?: "No car selected",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleMedium
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.car),
+                            contentDescription = "Car icon",
+                            tint = Color.Black,
+                            modifier = Modifier.size(45.dp)
                         )
-                        currentCar?.let {
+                        Spacer(modifier = Modifier.width(25.dp))
+                        Column {
+                            val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
                             Text(
-                                text = it.number,
+                                text = currentCar?.let { "${it.brand} ${it.model}" }
+                                    ?: "No car selected",
                                 color = Color.White,
-                                style = MaterialTheme.typography.titleSmall
+                                style = MaterialTheme.typography.titleMedium
                             )
+                            currentCar?.let {
+                                Text(
+                                    text = it.number,
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         }
                     }
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrow),
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(35.dp)
+                            .rotate(arrowRotationDegree)
+                    )
                 }
-                Icon(
-                    painter = painterResource(id = R.drawable.arrow),
-                    contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .size(35.dp)
-                        .rotate(arrowRotationDegree)
-                )
             }
-        }
 
-        if (expanded) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                cars.value.forEachIndexed { index, car ->
-                    if (index != selectedCarIndex) {
-                        Button(
-                            onClick = {
-                                viewModel.selectedCarIndex.value = index
-                                expanded = false
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RectangleShape,
-                            contentPadding = PaddingValues(5.dp)
-                        ) {
-                            Row(
+            if (expanded) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    cars.value.forEachIndexed { index, car ->
+                        if (index != selectedCarIndex) {
+                            Button(
+                                onClick = {
+                                    viewModel.selectedCarIndex.value = index
+                                    expanded = false
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFF9C141E
+                                    )
+                                ),
                                 modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                                shape = RectangleShape,
+                                contentPadding = PaddingValues(5.dp)
                             ) {
-                                Spacer(modifier = Modifier.width(20.dp))
-                                Icon(
-                                    painter = painterResource(id = R.drawable.car),
-                                    contentDescription = "Car icon",
-                                    tint = Color.Black,
-                                    modifier = Modifier.size(45.dp)
-                                )
-                                Spacer(modifier = Modifier.width(25.dp))
-                                Column {
-                                    Text(
-                                        text = "${car.brand} ${car.model}",
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.titleMedium
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Spacer(modifier = Modifier.width(20.dp))
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.car),
+                                        contentDescription = "Car icon",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(45.dp)
                                     )
-                                    Text(
-                                        text = car.number,
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
+                                    Spacer(modifier = Modifier.width(25.dp))
+                                    Column {
+                                        Text(
+                                            text = "${car.brand} ${car.model}",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            text = car.number,
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                Button(
-                    onClick = {
-                        expanded = false
-                        navController.navigate("addcar")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(10.dp)
-                ) {
-                    Row(
+                    Button(
+                        onClick = {
+                            expanded = false
+                            navController.navigate("addcar")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(10.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.add),
-                            contentDescription = "Add car",
-                            tint = Color.White,
-                            modifier = Modifier.size(35.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Add car",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add),
+                                contentDescription = "Add car",
+                                tint = Color.White,
+                                modifier = Modifier.size(35.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Add car",
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
                     }
                 }
             }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (cars.value.isNotEmpty()) {
-            Button(
-                onClick = {
-                    val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
-                    navController.navigate("addevent/$selectedCarId")
+            if (cars.value.isNotEmpty()) {
+                Button(
+                    onClick = {
+                        val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
+                        navController.navigate("addevent/$selectedCarId")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape
+                ) {
+                    Text("Add Event", color = Color.White)
+                }
+            }
+            CalendarViewModel(
+                month = currentMonth,
+                eventDates = events.value.map {
+                    it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-                modifier = Modifier.fillMaxWidth(),
-                shape = RectangleShape
+                onMonthChange = { direction ->
+                    currentMonth =
+                        if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(
+                            1
+                        )
+                }
+            )
+        }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F5))
+                    .blur(8.dp)
             ) {
-                Text("Add Event", color = Color.White)
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(50.dp),
+                    color = Color(0xFF9C141E)
+                )
             }
         }
-        CalendarViewModel (
-            month = currentMonth,
-            eventDates = events.value.map { it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() },
-            onMonthChange = { direction ->
-                currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
-            }
-        )
     }
 }
 

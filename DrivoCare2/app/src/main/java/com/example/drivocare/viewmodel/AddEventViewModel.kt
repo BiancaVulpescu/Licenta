@@ -23,18 +23,22 @@ class AddEventViewModel : ViewModel() {
     fun buildValidatedEvent(): Result<Event> {
         val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
         val startDateTimeStr="${startDate.value.trim()} ${startTime.value.trim().ifBlank { "00:00" }}"
-        val endDateTimeStr="${endDate.value.trim()} ${endTime.value.trim().ifBlank { "00:00" }}"
-        Log.d("TimestampDebug", "Parsing start: '$startDateTimeStr'")
+
         val start = try {
             Timestamp(dateFormat.parse(startDateTimeStr)!!)
         } catch (e: Exception) {
             return Result.failure(Exception("Start date/time must be in dd-MM-yyyy/HH:mm format"))
         }
 
-        val end = try {
-            Timestamp(dateFormat.parse(endDateTimeStr)!!)
-        } catch (e: Exception) {
-            return Result.failure(Exception("End date/time must be in dd-MM-yyyy/HH:mm format"))
+        val end = if (endDate.value.isNotBlank()) {
+            val endDateTimeStr = "${endDate.value.trim()} ${endTime.value.trim().ifBlank { "00:00" }}"
+            try {
+                Timestamp(dateFormat.parse(endDateTimeStr)!!)
+            } catch (e: Exception) {
+                return Result.failure(Exception("End date/time must be in dd-MM-yyyy/HH:mm format"))
+            }
+        } else {
+            start
         }
 
         if (title.value.isBlank()) {

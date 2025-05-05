@@ -20,9 +20,12 @@ class MyCarsViewModel : ViewModel(){
     val events: LiveData<List<Event>> get() =_events
 
     var selectedCarIndex = mutableStateOf(0)
+    val isLoading = mutableStateOf(false)
 
     fun loadCarsForCurrentUser() {
         val userId = auth.currentUser?.uid ?: return
+        isLoading.value = true
+
         firestore.collection("users")
             .document(userId)
             .collection("cars")
@@ -39,6 +42,9 @@ class MyCarsViewModel : ViewModel(){
             }
             .addOnFailureListener{
                 _cars.value= emptyList()
+            }
+            .addOnCompleteListener {
+                isLoading.value = false
             }
     }
 
