@@ -4,6 +4,7 @@ import android.widget.CalendarView
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -26,15 +28,18 @@ import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.CalendarViewModel
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.LocalDate
 
 @Composable
 fun MyCarsPage(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel,
+    addCarViewModel: AddCarViewModel,
     viewModel: MyCarsViewModel = viewModel()
 ) {
     val authState = authViewModel.authState.observeAsState()
@@ -45,6 +50,7 @@ fun MyCarsPage(
     val events = viewModel.events.observeAsState(listOf())
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val isLoading by viewModel.isLoading
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -177,6 +183,7 @@ fun MyCarsPage(
 
                     Button(
                         onClick = {
+                            addCarViewModel.reset()
                             expanded = false
                             navController.navigate("addcar")
                         },
@@ -206,33 +213,82 @@ fun MyCarsPage(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
 
-            if (cars.value.isNotEmpty()) {
-                Button(
-                    onClick = {
-                        val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
-                        navController.navigate("addevent/$selectedCarId")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RectangleShape
-                ) {
-                    Text("Add Event", color = Color.White)
-                }
-            }
             CalendarViewModel(
                 month = currentMonth,
                 eventDates = events.value.map {
                     it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 },
                 onMonthChange = { direction ->
-                    currentMonth =
-                        if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(
-                            1
-                        )
-                }
+                    currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
+                },
+                onDateSelected = { selectedDate = it },
+                selectedDate = selectedDate
             )
+            val todayEvents = events.value.filter {
+                val date = it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                date == selectedDate
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column {
+                todayEvents.forEach {
+                    Row(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .width(8.dp)
+                                .heightIn(min = 44.dp)
+                                .background(Color(0xFF479195)) // blue line
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = it.title,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 16.sp
+                            )
+                            if (it.description.isNotBlank()) {
+                                Text(text = it.description, color = Color.Gray, fontSize = 14.sp)
+                            }
+                        }
+                    }
+                }
+                if (cars.value.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
+                            navController.navigate("addevent/$selectedCarId")
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .width(8.dp)
+                            .height(44.dp)
+                            .background(Color(0xFF479195))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Add event",
+                        color = Color(0xFF479195),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                }
+
+            }
+
         }
         if (isLoading) {
             Box(

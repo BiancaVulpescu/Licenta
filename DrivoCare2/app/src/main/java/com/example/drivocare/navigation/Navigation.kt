@@ -37,8 +37,8 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, addC
             composable("register") { RegisterPage(modifier, navController, authViewModel) }
             composable("home") { HomePage(modifier, navController, authViewModel) }
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
-            composable("mycars") { MyCarsPage(modifier, navController,authViewModel) }
-            composable("settings") { SettingsPage(modifier, navController,authViewModel) }
+            composable("mycars") { MyCarsPage(modifier, navController,authViewModel, addCarViewModel) }
+            composable("settings") { SettingsPage(modifier, navController,authViewModel,addCarViewModel) }
             composable("myposts") { MyPostsPage(modifier, navController, authViewModel) }
             composable("inbox") { InboxPage(modifier, navController, authViewModel) }
             composable("newpost") { NewPostPage(modifier, navController, authViewModel) }

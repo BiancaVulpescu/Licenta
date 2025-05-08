@@ -29,11 +29,6 @@ fun HomePage(modifier: Modifier=Modifier, navController: NavController, authView
         verticalArrangement= Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text(text="HomePage", fontSize = 32.sp)
-        TextButton(onClick = {
-            authViewModel.logout()
-        }) {
-            Text(text="Logout")
-        }
+
     }
 }

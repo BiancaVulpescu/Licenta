@@ -23,6 +23,7 @@ import com.example.drivocare.R
 import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 import android.widget.Toast
+import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -45,12 +46,11 @@ fun AddCarPage(
                 .fillMaxSize()
                 .background(Color(0xFFF5F5F5))
                 .verticalScroll(scrollState)
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
-            // Brand field
             Text(
                 "Brand",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
@@ -58,8 +58,8 @@ fun AddCarPage(
                 value = addCarViewModel.brand.value,
                 onValueChange = { addCarViewModel.brand.value = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                    .fillMaxWidth(),
+                shape=RectangleShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -67,10 +67,9 @@ fun AddCarPage(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Model field
             Text(
                 "Model",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
@@ -78,8 +77,8 @@ fun AddCarPage(
                 value = addCarViewModel.model.value,
                 onValueChange = { addCarViewModel.model.value = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                    .fillMaxWidth(),
+                shape=RectangleShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -87,10 +86,9 @@ fun AddCarPage(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Production Year
             Text(
                 "An productie",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
@@ -98,8 +96,8 @@ fun AddCarPage(
                 value = addCarViewModel.year.value,
                 onValueChange = { addCarViewModel.year.value = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                    .fillMaxWidth(),
+                shape=RectangleShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -107,10 +105,9 @@ fun AddCarPage(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Registration Number
             Text(
                 "Nr. inmatriculare",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF479195)
             )
@@ -118,8 +115,8 @@ fun AddCarPage(
                 value = addCarViewModel.number.value,
                 onValueChange = { addCarViewModel.number.value = it },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
+                    .fillMaxWidth(),
+                shape=RectangleShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = Color(0xFF479195),
                     unfocusedContainerColor = Color.White
@@ -127,88 +124,87 @@ fun AddCarPage(
             )
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                "Add events to calendar",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF479195),
-                modifier = Modifier.clickable {
-                    navController.navigate("addevent") { launchSingleTop = true }
-                }
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Event list
-            addCarViewModel.pendingEvents.forEach { event ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = event.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF9C141E)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
+
+            if(!addCarViewModel.isEditMode.value) {
+                Text(
+                    "Add events to calendar",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF479195),
+                    modifier = Modifier.clickable {
+                        navController.navigate("addevent") { launchSingleTop = true }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                addCarViewModel.pendingEvents.forEach { event ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Text(
+                            text = event.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color(0xFF9C141E)
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Text(
-                                "data inceput",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF479195),
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(Color(0xFF479195))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    dateFormat.format(event.startDate.toDate()),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White
+                                    "data inceput",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF479195),
+                                    textAlign = TextAlign.Center
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFF479195))
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        dateFormat.format(event.startDate.toDate()),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White
+                                    )
+                                }
                             }
-                        }
-                        Spacer(modifier = Modifier.width(30.dp))
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "data expirare",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color(0xFF479195),
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(Color(0xFF479195))
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            Spacer(modifier = Modifier.width(30.dp))
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    dateFormat.format(event.endDate.toDate()),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.White
+                                    "data expirare",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF479195),
+                                    textAlign = TextAlign.Center
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFF479195))
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        dateFormat.format(event.endDate.toDate()),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                     }
+                    Divider(color = Color(0xFF479195), thickness = 0.5.dp)
                 }
-                Divider(color = Color(0xFF479195), thickness = 0.5.dp)
             }
-            
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Save button
+
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -219,7 +215,8 @@ fun AddCarPage(
                         addCarViewModel.saveCar(
                             onSuccess = { carId ->
                                 isLoading = false
-                                Toast.makeText(context, "Car added", Toast.LENGTH_SHORT).show()
+                                addCarViewModel.reset()
+                                Toast.makeText(context, "Car saved", Toast.LENGTH_SHORT).show()
                                 navController.navigate("mycars")
                             },
                             onError = {
@@ -229,13 +226,13 @@ fun AddCarPage(
                         )
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
-                    modifier = Modifier.width(200.dp),
+                    modifier = Modifier.width(140.dp),
                     shape = RectangleShape
                 ) {
                     Text(
                         "Salveaza",
                         color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
