@@ -1,36 +1,25 @@
 package com.example.drivocare.ui.screens
 
+import android.widget.CalendarView
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -38,126 +27,281 @@ import com.example.drivocare.R
 import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.drivocare.viewmodel.AddCarViewModel
+import com.example.drivocare.viewmodel.CalendarViewModel
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.LocalDate
 
 @Composable
-fun MyCarsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, viewModel: MyCarsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun MyCarsPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    addCarViewModel: AddCarViewModel,
+    viewModel: MyCarsViewModel = viewModel()
+) {
     val authState = authViewModel.authState.observeAsState()
     val cars = viewModel.cars.observeAsState(listOf())
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    var selectedCarIndex by remember { mutableStateOf(0) }
+    val selectedCarIndex by viewModel.selectedCarIndex
+    val events = viewModel.events.observeAsState(listOf())
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    val isLoading by viewModel.isLoading
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    val arrowRotationDegree by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 300)
+    )
 
     LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            is AuthState.Authenticated -> viewModel.loadCarsForCurrentUser()
-            else -> Unit
+        if (authState.value is AuthState.Authenticated) {
+            viewModel.loadCarsForCurrentUser()
+        } else if (authState.value is AuthState.Unauthenticated) {
+            navController.navigate("login")
         }
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Box {
+
+    LaunchedEffect(viewModel.selectedCarIndex.value, cars.value) {
+        val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
+        if (currentCar != null) {
+            viewModel.loadEventsForCar(currentCar.id)
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5))
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
             Button(
                 onClick = { expanded = !expanded },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RectangleShape
+                shape = RectangleShape,
+                contentPadding = PaddingValues(5.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.car),
-                        contentDescription = "Car icon",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (cars.value.isNotEmpty()) "${cars.value[selectedCarIndex].brand} ${cars.value[selectedCarIndex].model}" else "No car selected",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleMedium
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Icon(
+                            painter = painterResource(id = R.drawable.car),
+                            contentDescription = "Car icon",
+                            tint = Color.Black,
+                            modifier = Modifier.size(45.dp)
                         )
-                        if (cars.value.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(25.dp))
+                        Column {
+                            val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
                             Text(
-                                text = cars.value[selectedCarIndex].number,
+                                text = currentCar?.let { "${it.brand} ${it.model}" }
+                                    ?: "No car selected",
                                 color = Color.White,
-                                style = MaterialTheme.typography.bodySmall
+                                style = MaterialTheme.typography.titleMedium
                             )
+                            currentCar?.let {
+                                Text(
+                                    text = it.number,
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                            }
                         }
                     }
                     Icon(
                         painter = painterResource(id = R.drawable.arrow),
-                        contentDescription = "Dropdown arrow",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(35.dp)
+                            .rotate(arrowRotationDegree)
                     )
                 }
             }
 
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                cars.value.forEachIndexed { index, car ->
-                    if (index != selectedCarIndex) {
-                        DropdownMenuItem(
-                            text = {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+            if (expanded) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    cars.value.forEachIndexed { index, car ->
+                        if (index != selectedCarIndex) {
+                            Button(
+                                onClick = {
+                                    viewModel.selectedCarIndex.value = index
+                                    expanded = false
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(
+                                        0xFF9C141E
+                                    )
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RectangleShape,
+                                contentPadding = PaddingValues(5.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Spacer(modifier = Modifier.width(20.dp))
                                     Icon(
                                         painter = painterResource(id = R.drawable.car),
                                         contentDescription = "Car icon",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(20.dp)
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(45.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(25.dp))
                                     Column {
-                                        Text("${car.brand} ${car.model}", color = Color.White)
-                                        Text(car.number, fontSize = 12.sp, color = Color.LightGray)
+                                        Text(
+                                            text = "${car.brand} ${car.model}",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Text(
+                                            text = car.number,
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
                                     }
                                 }
-                            },
-                            onClick = {
-                                selectedCarIndex = index
-                                expanded = false
-                            },
-                            modifier = Modifier.background(Color(0xFF9C141E))
-                        )
+                            }
+                        }
                     }
-                }
 
-                Divider(color = Color.LightGray)
-
-                DropdownMenuItem(
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    Button(
+                        onClick = {
+                            addCarViewModel.reset()
+                            expanded = false
+                            navController.navigate("addcar")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.add),
                                 contentDescription = "Add car",
-                                tint = Color(0xFF479195),
-                                modifier = Modifier.size(20.dp)
+                                tint = Color.White,
+                                modifier = Modifier.size(35.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Add car", color = Color(0xFF479195))
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Add car",
+                                color = Color.White,
+                                style = MaterialTheme.typography.titleLarge
+                            )
                         }
-                    },
-                    onClick = {
-                        expanded = false
-                        navController.navigate("addcar")
                     }
+                }
+            }
+
+            CalendarViewModel(
+                month = currentMonth,
+                eventDates = events.value.map {
+                    it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                },
+                onMonthChange = { direction ->
+                    currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
+                },
+                onDateSelected = { selectedDate = it },
+                selectedDate = selectedDate
+            )
+            val todayEvents = events.value.filter {
+                val date = it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+                date == selectedDate
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column {
+                todayEvents.forEach {
+                    Row(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .width(8.dp)
+                                .heightIn(min = 44.dp)
+                                .background(Color(0xFF479195)) // blue line
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = it.title,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 16.sp
+                            )
+                            if (it.description.isNotBlank()) {
+                                Text(text = it.description, color = Color.Gray, fontSize = 14.sp)
+                            }
+                        }
+                    }
+                }
+                if (cars.value.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .clickable {
+                            val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
+                            navController.navigate("addevent/$selectedCarId")
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .width(8.dp)
+                            .height(44.dp)
+                            .background(Color(0xFF479195))
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Add event",
+                        color = Color(0xFF479195),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                }
+
+            }
+
+        }
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F5))
+                    .blur(8.dp)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(50.dp),
+                    color = Color(0xFF9C141E)
                 )
             }
         }

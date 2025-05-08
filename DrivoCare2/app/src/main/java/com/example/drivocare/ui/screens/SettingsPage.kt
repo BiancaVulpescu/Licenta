@@ -1,34 +1,267 @@
 package com.example.drivocare.ui.screens
 
+import android.R.id.bold
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.drivocare.R
 import com.example.drivocare.data.AuthState
+import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
+import com.example.drivocare.viewmodel.MyCarsViewModel
 
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
+fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, myCarsViewModel: MyCarsViewModel = viewModel()) {
     val authState= authViewModel.authState.observeAsState()
+    val cars by myCarsViewModel.cars.observeAsState(listOf()) // use cars.value later
+    val selectedCarIndex = myCarsViewModel.selectedCarIndex
+    var expanded by remember { mutableStateOf(false) }
+
     LaunchedEffect(authState.value) {
-        when(authState.value){
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            else-> Unit
+        if (authState.value is AuthState.Authenticated) {
+            myCarsViewModel.loadCarsForCurrentUser()
+        } else if (authState.value is AuthState.Unauthenticated) {
+            navController.navigate("login")
         }
     }
-    Column(
-        modifier=modifier.fillMaxSize(),
-        verticalArrangement= Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text(text="SettingsPage", fontSize = 32.sp)
+
+    LaunchedEffect(myCarsViewModel.selectedCarIndex.value, cars) {
+        val currentCar = cars.getOrNull(myCarsViewModel.selectedCarIndex.value)
+        if (currentCar != null) {
+            myCarsViewModel.loadEventsForCar(currentCar.id)
+        }
+    }
+
+    val arrowRotationDegree by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 300)
+    )
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFFCBD2D6))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            Button(
+                onClick = { expanded = !expanded },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column {
+                            Text(
+                                text = "My cars",
+                                color = Color(0xFF479195),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.arrow),
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = Color(0xFF479195),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .rotate(arrowRotationDegree)
+                    )
+                }
+            }
+
+            if (expanded) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    cars.forEachIndexed { index, car ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF479195))
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.car),
+                                    contentDescription = "Car Icon",
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(40.dp)
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Column {
+                                    Text(
+                                        text = "${car.brand} ${car.model}",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = car.number,
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                }
+                            }
+
+                            Button(
+                                onClick = {
+                                    addCarViewModel.brand.value = car.brand
+                                    addCarViewModel.model.value = car.model
+                                    addCarViewModel.year.value = car.year.toString()
+                                    addCarViewModel.number.value = car.number
+                                    addCarViewModel.isEditMode.value = true
+                                    addCarViewModel.editingCarId = car.id
+
+                                    expanded = false
+                                    navController.navigate("addcar")
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                                shape = RectangleShape,
+                            ) {
+                                Text("Edit", color = Color(0xFF479195))
+                            }
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            addCarViewModel.reset()
+                            expanded = false
+                            navController.navigate("addcar")
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RectangleShape
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add),
+                                contentDescription = "Add Car",
+                                tint = Color.White,
+                                modifier = Modifier.size(35.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text("Add car", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
+                }
+            }
+            TextButton(
+                onClick = { authViewModel.logout() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 12.dp),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Logout",
+                        color = Color(0xFF479195),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            TextButton(
+                onClick = {  },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 12.dp),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Change username",
+                        color = Color(0xFF479195),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            TextButton(
+                onClick = {  },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 12.dp),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Change password",
+                        color = Color(0xFF479195),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+
+        }
     }
 }
+
+
+
+

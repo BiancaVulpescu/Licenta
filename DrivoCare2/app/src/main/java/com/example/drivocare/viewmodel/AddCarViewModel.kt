@@ -16,6 +16,8 @@ class AddCarViewModel : ViewModel() {
     var year = mutableStateOf("")
     var model = mutableStateOf("")
     var number = mutableStateOf("")
+    var isEditMode = mutableStateOf(false)
+    var editingCarId: String? = null
 
     val pendingEvents = mutableStateListOf<Event>()
     fun addPendingEvent(event: Event) {
@@ -28,20 +30,41 @@ class AddCarViewModel : ViewModel() {
             onError("Year must be a valid number")
             return
         }
-        val car = Car(brand.value, yearInt , model.value, number.value)
-        repository.addCar(car, onSuccess = { carId ->
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@addCar
-            val carRef = FirebaseFirestore.getInstance()
-                .collection("users").document(userId)
-                .collection("cars").document(carId)
 
-            pendingEvents.forEach { event ->
-                carRef.collection("events").add(event)
-                    .addOnFailureListener { Log.e("SaveCar", "Failed to save event: ${it.message}") }
-            }
+        val car = Car(brand.value, yearInt, model.value, number.value)
 
-            onSuccess(carId)
-        }, onError = onError)
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val carRef = FirebaseFirestore.getInstance()
+            .collection("users").document(userId)
+            .collection("cars")
 
+        if (isEditMode.value && editingCarId != null) {
+            carRef.document(editingCarId!!).set(car)
+                .addOnSuccessListener {
+                    onSuccess(editingCarId!!)
+                }
+                .addOnFailureListener {
+                    onError(it.message ?: "Failed to edit car information")
+                }
+        } else {
+            repository.addCar(car, onSuccess = { carId ->
+                val docRef = carRef.document(carId)
+                pendingEvents.forEach { event ->
+                    docRef.collection("events").add(event)
+                        .addOnFailureListener { Log.e("SaveCar", "Failed to save event: ${it.message}") }
+                }
+                onSuccess(carId)
+            }, onError = onError)
+        }
     }
+    fun reset() {
+        brand.value = ""
+        model.value = ""
+        year.value = ""
+        number.value = ""
+        isEditMode.value = false
+        editingCarId = null
+        pendingEvents.clear()
+    }
+
 }
