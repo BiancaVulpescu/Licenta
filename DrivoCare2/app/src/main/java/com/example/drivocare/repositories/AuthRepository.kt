@@ -62,10 +62,61 @@ class AuthRepository {
                 println("Error adding user: ${e.message}")
             }
     }
+    fun updateUsername(newUsername: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(userId)
+            .update("username", newUsername)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onError(e.message ?: "Failed to update username") }
+    }
+    fun fetchCurrentUsername(onSuccess: (String) -> Unit, onError: (String) -> Unit = {}) {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            onError("User not logged in")
+            return
+        }
 
+        firestore.collection("users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                val username = document.getString("username") ?: ""
+                onSuccess(username)
+            }
+            .addOnFailureListener {
+                onError(it.message ?: "Failed to fetch username")
+            }
+    }
+    fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val user = auth.currentUser
+        val email = user?.email
+
+        if (user == null || email.isNullOrBlank()) {
+            onError("User not logged in")
+            return
+        }
+
+        val credential = com.google.firebase.auth.EmailAuthProvider.getCredential(email, currentPassword)
+
+        user.reauthenticate(credential)
+            .addOnSuccessListener {
+                user.updatePassword(newPassword)
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onError(it.message ?: "Failed to update password") }
+            }
+            .addOnFailureListener {
+                onError("Current password is incorrect")
+            }
+    }
 
     fun logout() {
         auth.signOut()
         authState.value = AuthState.Unauthenticated
     }
+
 }

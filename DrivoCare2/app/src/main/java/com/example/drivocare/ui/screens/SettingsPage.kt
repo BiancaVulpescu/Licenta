@@ -12,15 +12,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -53,7 +58,13 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
     val cars by myCarsViewModel.cars.observeAsState(listOf()) // use cars.value later
     val selectedCarIndex = myCarsViewModel.selectedCarIndex
     var expanded by remember { mutableStateOf(false) }
-
+    var showChangeUsernameDialog by remember { mutableStateOf(false) }
+    var newUsername by remember { mutableStateOf("") }
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var passwordChangeError by remember { mutableStateOf<String?>(null) }
+    var colorBlue =Color(0xFF479195)
     LaunchedEffect(authState.value) {
         if (authState.value is AuthState.Authenticated) {
             myCarsViewModel.loadCarsForCurrentUser()
@@ -76,6 +87,9 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color(0xFFCBD2D6))
+        .let {
+            if (showChangeUsernameDialog || showChangePasswordDialog) it.blur(8.dp) else it
+        }
     ) {
         Column(
             modifier = Modifier
@@ -99,7 +113,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                         Column {
                             Text(
                                 text = "My cars",
-                                color = Color(0xFF479195),
+                                color = colorBlue,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -108,7 +122,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                     Icon(
                         painter = painterResource(id = R.drawable.arrow),
                         contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = Color(0xFF479195),
+                        tint = colorBlue,
                         modifier = Modifier
                             .size(32.dp)
                             .rotate(arrowRotationDegree)
@@ -122,7 +136,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFF479195))
+                                .background(colorBlue)
                                 .padding(10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -164,7 +178,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                                 shape = RectangleShape,
                             ) {
-                                Text("Edit", color = Color(0xFF479195))
+                                Text("Edit", color = colorBlue)
                             }
                         }
                     }
@@ -175,7 +189,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                             expanded = false
                             navController.navigate("addcar")
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
+                        colors = ButtonDefaults.buttonColors(containerColor = colorBlue),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RectangleShape
                     ) {
@@ -211,14 +225,16 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                 ) {
                     Text(
                         text = "Logout",
-                        color = Color(0xFF479195),
+                        color = colorBlue,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
                 }
             }
             TextButton(
-                onClick = {  },
+                onClick = {  authViewModel.fetchCurrentUsername()
+                    newUsername = ""
+                    showChangeUsernameDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RectangleShape
@@ -231,14 +247,17 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                 ) {
                     Text(
                         text = "Change username",
-                        color = Color(0xFF479195),
+                        color = colorBlue,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
                 }
             }
             TextButton(
-                onClick = {  },
+                onClick = {currentPassword = ""
+                    newPassword = ""
+                    passwordChangeError = null
+                    showChangePasswordDialog = true  },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RectangleShape
@@ -251,7 +270,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                 ) {
                     Text(
                         text = "Change password",
-                        color = Color(0xFF479195),
+                        color = colorBlue,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -259,6 +278,150 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
             }
 
         }
+        if (showChangeUsernameDialog) {
+            AlertDialog(
+                onDismissRequest = { showChangeUsernameDialog = false },
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Change Username",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = colorBlue
+                        )
+                    }
+                },
+                text = {
+                    Column {
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        Text(
+                            text = "Current: ${authViewModel.currentUsername.value}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        OutlinedTextField(
+                            value = newUsername,
+                            onValueChange = { newUsername = it },
+                            label = { Text("New Username", color= colorBlue) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.Black,
+                                    unfocusedBorderColor = Color.Black
+                            )
+                        )
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(onClick = { showChangeUsernameDialog = false }) {
+                                Text("Cancel", color = colorBlue, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                            }
+                            TextButton(onClick = {
+                                authViewModel.updateUsername(
+                                    newUsername,
+                                    onSuccess = { showChangeUsernameDialog = false },
+                                    onError = { }
+                                )
+                            }) {
+                                Text("Save", color = colorBlue, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {}
+            )
+        }
+
+        if (showChangePasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showChangePasswordDialog = false },
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Change Password",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = colorBlue
+                        )
+                    }
+                },
+                text = {
+                    Column {
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        OutlinedTextField(
+                            value = currentPassword,
+                            onValueChange = { currentPassword = it },
+                            label = { Text("Current Password", color = colorBlue) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Black,
+                                unfocusedBorderColor = Color.Black
+                            )
+                        )
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        OutlinedTextField(
+                            value = newPassword,
+                            onValueChange = { newPassword = it },
+                            label = { Text("New Password", color = colorBlue) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color.Black,
+                                unfocusedBorderColor = Color.Black
+                            )
+                        )
+                        if (!passwordChangeError.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = passwordChangeError ?: "",
+                                color = Color.Red,
+                                fontSize = 14.sp
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(top = 16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(onClick = { showChangePasswordDialog = false }) {
+                                Text(
+                                    "Cancel",
+                                    color = colorBlue,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                            TextButton(onClick = {
+                                authViewModel.changePassword(
+                                    currentPassword,
+                                    newPassword,
+                                    onSuccess = { showChangePasswordDialog = false },
+                                    onError = { passwordChangeError = it }
+                                )
+                            }) {
+                                Text(
+                                    "Save",
+                                    color = colorBlue,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {}
+            )
+        }
+
+
     }
 }
 
