@@ -15,9 +15,6 @@ class PostViewModel : ViewModel() {
     private val repository = PostRepository()
     private val auth = FirebaseAuth.getInstance()
 
-    private val _cachedUsername = MutableLiveData<String?>()
-    val cachedUsername: LiveData<String?> = _cachedUsername
-
     val posts: LiveData<List<Post>> = repository.getPosts()
 
     private val _isPostCreated = MutableLiveData(false)
@@ -28,6 +25,9 @@ class PostViewModel : ViewModel() {
 
     private val _selectedImageUri = MutableLiveData<Uri?>(null)
     val selectedImageUri: LiveData<Uri?> = _selectedImageUri
+
+    private val commentCounts = mutableMapOf<String, MutableLiveData<Int>>()
+
     fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
     }
@@ -42,56 +42,54 @@ class PostViewModel : ViewModel() {
     fun resetPostCreatedState() {
         _isPostCreated.value = false
     }
-    fun loadUsernameIfNeeded() {
-        if (_cachedUsername.value != null) return
 
-        val userId = auth.currentUser?.uid ?: return
-        FirebaseFirestore.getInstance().collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                _cachedUsername.value = document.getString("username") ?: "User"
-            }
-            .addOnFailureListener { e ->
-                Log.e("PostViewModel", "Failed to fetch username: ${e.message}", e)
-            }
-    }
-
-    fun addPost() {
+    fun addPost(username:String) {
         val currentUser = auth.currentUser ?: return
         val text = _postText.value
         val imageUri = _selectedImageUri.value
-        val username = _cachedUsername.value ?: "Username"
         val userId = currentUser.uid
 
         if (text.isNullOrBlank() && imageUri == null) return
-
+        val postToFirestore = { imageUrl: String? ->
+            val post = Post(
+                userId = userId,
+                username = username,
+                contentText = text,
+                imageUrl = imageUrl,
+                time = Timestamp.now()
+            )
+            repository.addPost(post).addOnSuccessListener {
+                _postText.value = ""
+                _selectedImageUri.value = null
+                _isPostCreated.value = true
+            }.addOnFailureListener { e ->
+                Log.e("PostViewModel", "Failed to save post: ${e.message}", e)
+            }
+        }
         if (imageUri != null) {
             repository.uploadImage(imageUri) { imageUrl ->
                 if (imageUrl != null) {
-                    postToFirestore(userId, username, text, imageUrl)
+                    postToFirestore(imageUrl)
                 } else {
                     Log.e("PostViewModel", "Image upload failed. Post not created.")
                 }
             }
         } else {
-            postToFirestore(userId, username, text, null)
+            postToFirestore( null)
         }
+    }
+    fun clearDraft() {
+        _postText.value = ""
+        _selectedImageUri.value = null
     }
 
-    private fun postToFirestore(userId: String, username: String, text: String?, imageUrl: String?) {
-        val post = Post(
-            userId = userId,
-            username = username,
-            contentText = text,
-            imageUrl = imageUrl,
-            time = Timestamp.now()
-        )
-        repository.addPost(post).addOnSuccessListener {
-            _postText.value = ""
-            _selectedImageUri.value = null
-            _isPostCreated.value = true
-        }.addOnFailureListener { e ->
-            Log.e("PostViewModel", "Failed to save post: ${e.message}", e)
+    fun getCommentCountLive(postId: String): LiveData<Int> {
+        if (!commentCounts.containsKey(postId)) {
+            val liveData = repository.observeCommentCount(postId)
+            commentCounts[postId] = liveData as MutableLiveData<Int>
         }
+        return commentCounts[postId]!!
     }
+
+
 }

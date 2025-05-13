@@ -39,6 +39,9 @@ import java.util.*
 @Composable
 fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController: NavController, authViewModel: AuthViewModel, viewModel: PostDetailViewModel)
 {
+    val usernameState = authViewModel.currentUsername.collectAsState()
+    val username = usernameState.value ?: "User"
+
     fun formatDate(date: Date): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return formatter.format(date)
@@ -158,7 +161,7 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
 
                 Button(
                     onClick = {
-                        viewModel.addComment(postId)
+                        viewModel.addComment(postId, username)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2A9D8F)

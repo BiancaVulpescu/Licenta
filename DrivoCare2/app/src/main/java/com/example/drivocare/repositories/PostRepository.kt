@@ -65,5 +65,18 @@ class PostRepository {
             }
         return commentsLiveData
     }
+    fun observeCommentCount(postId: String): LiveData<Int> {
+        val countLiveData = MutableLiveData<Int>()
+        firestore.collection("posts")
+            .document(postId)
+            .collection("comments")
+            .addSnapshotListener { snapshot, _ ->
+                countLiveData.value = snapshot?.size() ?: 0
+            }
+        return countLiveData
+    }
+
+
+
 }
 

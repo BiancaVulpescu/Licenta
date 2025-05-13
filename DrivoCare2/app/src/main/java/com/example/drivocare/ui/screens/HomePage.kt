@@ -29,6 +29,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,9 +57,6 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
     fun formatDate(date: Date): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return formatter.format(date)
-    }
-    LaunchedEffect(Unit) {
-        viewModel.loadUsernameIfNeeded()
     }
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -93,14 +92,18 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
                 .weight(1f)
         ) {
             items(posts, key = { it.id }) { post ->
-                PostItem(post = post, navController = navController)
+                PostItem(post = post, navController = navController, viewModel = viewModel)
             }
         }
     }
 }
 
 @Composable
-fun PostItem(post: Post, navController: NavController) {
+fun PostItem(post: Post, navController: NavController, viewModel: PostViewModel) {
+
+
+    val commentCount = viewModel.getCommentCountLive(post.id).observeAsState(initial = 0)
+
     fun formatDate(date: Date): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return formatter.format(date)
@@ -167,7 +170,7 @@ fun PostItem(post: Post, navController: NavController) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "3 comments", // de implementat aici logica  pt nr de comm
+                    "${commentCount.value} comments",
                     color = Color(0xFFE63946),
                     fontWeight = FontWeight.Bold
                 )

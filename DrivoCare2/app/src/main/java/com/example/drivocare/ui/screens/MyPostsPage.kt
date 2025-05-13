@@ -34,7 +34,7 @@ fun MyPostsPage(modifier: Modifier = Modifier, navController: NavController, aut
                 .weight(1f)
         ) {
             items(myPosts, key = { it.id }) { post ->
-                PostItem(post = post, navController = navController)
+                PostItem(post = post, navController = navController, viewModel = viewModel)
             }
         }
     }

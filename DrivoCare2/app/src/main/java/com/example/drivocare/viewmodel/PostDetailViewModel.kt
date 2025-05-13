@@ -38,14 +38,14 @@ class PostDetailViewModel : ViewModel() {
         _commentText.value = text
     }
 
-    fun addComment(postId: String) {
+    fun addComment(postId: String, username: String) {
         val auth = FirebaseAuth.getInstance()
         val currentUser = auth.currentUser
 
         if (currentUser != null && !_commentText.value.isNullOrBlank()) {
             val comment = Comment(
                 userId = currentUser.uid,
-                username = currentUser.displayName ?: "User",
+                username = username.ifBlank {"Username"},
                 text = _commentText.value ?: "",
                 time = Timestamp.now()
             )

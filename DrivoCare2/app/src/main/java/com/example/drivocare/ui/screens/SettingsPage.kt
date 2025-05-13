@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -51,14 +52,17 @@ import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
+import com.example.drivocare.viewmodel.PostViewModel
 
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, myCarsViewModel: MyCarsViewModel = viewModel()) {
+fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, postViewModel: PostViewModel, myCarsViewModel: MyCarsViewModel = viewModel()) {
     val authState= authViewModel.authState.observeAsState()
     val cars by myCarsViewModel.cars.observeAsState(listOf()) // use cars.value later
     val selectedCarIndex = myCarsViewModel.selectedCarIndex
     var expanded by remember { mutableStateOf(false) }
     var showChangeUsernameDialog by remember { mutableStateOf(false) }
+    val usernameState = authViewModel.currentUsername.collectAsState()
+    val username = usernameState.value
     var newUsername by remember { mutableStateOf("") }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var currentPassword by remember { mutableStateOf("") }
@@ -212,7 +216,9 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                 }
             }
             TextButton(
-                onClick = { authViewModel.logout() },
+                onClick = { authViewModel.logout()
+                            postViewModel.clearDraft()
+                          },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RectangleShape
@@ -298,7 +304,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                     Column {
                         Spacer(modifier = Modifier.padding(top = 16.dp))
                         Text(
-                            text = "Current: ${authViewModel.currentUsername.value}",
+                            text = "Current: $username",
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.padding(top = 16.dp))

@@ -1,6 +1,7 @@
 package com.example.drivocare.ui.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -15,6 +16,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +36,13 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
     val postText = viewModel.postText.observeAsState()
     val isPostCreated = viewModel.isPostCreated.observeAsState(false)
     val selectedImageUri = viewModel.selectedImageUri.observeAsState()
+    val usernameState = authViewModel.currentUsername.collectAsState()
+    val username = usernameState.value
+    LaunchedEffect(Unit) {
+        viewModel.setPostText("")
+        viewModel.setSelectedImageUri(null)
+        authViewModel.fetchCurrentUsername()
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -120,8 +129,12 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
                     }
 
                     Button(
-                        onClick = { viewModel.addPost() },
-                        enabled = !postText.value.isNullOrBlank(),
+                        onClick = {
+                            if (!username.isNullOrBlank()) {
+                                viewModel.addPost(username)
+                            }
+                        },
+                        enabled = !postText.value.isNullOrBlank() || selectedImageUri.value != null,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFE63946)
                         ),
