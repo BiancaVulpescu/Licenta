@@ -8,29 +8,37 @@ import com.example.drivocare.data.Post
 import com.example.drivocare.repositories.PostRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewModelScope
+import com.example.drivocare.repositories.IPostRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-class PostDetailViewModel : ViewModel() {
-    private val repository = PostRepository()
-    private val _post = MutableLiveData<Post>()
-    val post: LiveData<Post> = _post
+class PostDetailViewModel(private val repository: IPostRepository) : ViewModel() {
 
-    private val _comments = MutableLiveData<List<Comment>>()
-    val comments: LiveData<List<Comment>> = _comments
+    private val _post = MutableStateFlow<Post?>(null)
+    val post: StateFlow<Post?> = _post
 
-    private val _commentText = MutableLiveData<String>("")
-    val commentText: LiveData<String> = _commentText
+    private val _comments = MutableStateFlow<List<Comment>>(emptyList())
+    val comments: StateFlow<List<Comment>> = _comments
+
+    private val _commentText = MutableStateFlow("")
+    val commentText: StateFlow<String> = _commentText
 
     fun loadPost(postId: String) {
-        repository.getPost(postId).addOnSuccessListener { document ->
-            document.toObject(Post::class.java)?.let {
-                _post.value = it
+        viewModelScope.launch {
+            repository.getPosts().collectLatest { posts ->
+                _post.value = posts.find { it.id == postId }
             }
         }
     }
 
     fun loadComments(postId: String) {
-        repository.getComments(postId).observeForever {
-            _comments.value = it
+        viewModelScope.launch {
+            repository.getComments(postId).collectLatest {
+                _comments.value = it
+            }
         }
     }
 
@@ -39,20 +47,19 @@ class PostDetailViewModel : ViewModel() {
     }
 
     fun addComment(postId: String, username: String) {
-        val auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val text = _commentText.value
+        if (text.isBlank()) return
 
-        if (currentUser != null && !_commentText.value.isNullOrBlank()) {
-            val comment = Comment(
-                userId = currentUser.uid,
-                username = username.ifBlank {"Username"},
-                text = _commentText.value ?: "",
-                time = Timestamp.now()
-            )
+        val comment = Comment(
+            userId = user.uid,
+            username = username.ifBlank { "Username" },
+            text = text,
+            time = Timestamp.now()
+        )
 
-            repository.addComment(postId, comment).addOnSuccessListener {
-                _commentText.value = ""
-            }
-        }
+        repository.addComment(postId, comment, onSuccess = {
+            _commentText.value = ""
+        }, onFailure = {})
     }
 }

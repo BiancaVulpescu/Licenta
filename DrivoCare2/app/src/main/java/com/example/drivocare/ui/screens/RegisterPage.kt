@@ -17,6 +17,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -40,15 +41,15 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }  // For password mismatch error
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val authState by authViewModel.authState.collectAsState()
 
-    val authState= authViewModel.authState.observeAsState()
     val context = LocalContext.current
-    LaunchedEffect(authState.value) {
-        when(authState.value){
+    LaunchedEffect(authState) {
+        when(authState){
             is AuthState.Authenticated -> navController.navigate("home")
             is AuthState.Error-> Toast.makeText(context,
-                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+                (authState as AuthState.Error).message, Toast.LENGTH_SHORT).show()
             else-> Unit
         }
     }

@@ -1,27 +1,16 @@
 package com.example.drivocare.ui.screens
 
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,14 +19,20 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.PostViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel,viewModel: PostViewModel) {
-    val postText = viewModel.postText.observeAsState()
-    val isPostCreated = viewModel.isPostCreated.observeAsState(false)
-    val selectedImageUri = viewModel.selectedImageUri.observeAsState()
-    val usernameState = authViewModel.currentUsername.collectAsState()
-    val username = usernameState.value
+fun NewPostPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    viewModel: PostViewModel
+) {
+    val postText by viewModel.postText.collectAsState()
+    val isPostCreated by viewModel.isPostCreated.collectAsState()
+    val selectedImageUri by viewModel.selectedImageUri.collectAsState()
+    val username by authViewModel.currentUsername.collectAsState()
+    val userId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
     LaunchedEffect(Unit) {
         viewModel.setPostText("")
         viewModel.setSelectedImageUri(null)
@@ -47,32 +42,26 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            viewModel.setSelectedImageUri(it)
-        }
+        uri?.let { viewModel.setSelectedImageUri(it) }
     }
 
-    LaunchedEffect(isPostCreated.value) {
-        if (isPostCreated.value) {
+    LaunchedEffect(isPostCreated) {
+        if (isPostCreated) {
             viewModel.resetPostCreatedState()
             navController.popBackStack()
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             color = Color(0xFFE0E0E0)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 TextField(
-                    value = postText.value ?: "",
+                    value = postText,
                     onValueChange = { viewModel.setPostText(it) },
                     placeholder = { Text("Write your new post...") },
                     modifier = Modifier
@@ -89,7 +78,7 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                selectedImageUri.value?.let {uri->
+                selectedImageUri?.let { uri ->
                     Column(modifier = Modifier.fillMaxWidth()) {
                         AsyncImage(
                             model = uri,
@@ -116,9 +105,7 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
                 ) {
                     Button(
                         onClick = { launcher.launch("image/*") },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2A9D8F)
-                        ),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A9D8F)),
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Icon(
@@ -130,14 +117,12 @@ fun NewPostPage(modifier: Modifier = Modifier, navController: NavController, aut
 
                     Button(
                         onClick = {
-                            if (!username.isNullOrBlank()) {
+                            if (username.isNotBlank()) {
                                 viewModel.addPost(username)
                             }
                         },
-                        enabled = !postText.value.isNullOrBlank() || selectedImageUri.value != null,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE63946)
-                        ),
+                        enabled = postText.isNotBlank() || selectedImageUri != null,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946)),
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(

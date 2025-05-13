@@ -49,24 +49,20 @@ import com.example.drivocare.data.Post
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
 fun HomePage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, viewModel: PostViewModel)
 {
-    val authState = authViewModel.authState.observeAsState()
-    fun formatDate(date: Date): String {
-        val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        return formatter.format(date)
-    }
-    LaunchedEffect(authState.value) {
-        when (authState.value) {
+    val authState by authViewModel.authState.collectAsState()
+    LaunchedEffect(authState) {
+        when (authState) {
             is AuthState.Unauthenticated -> navController.navigate("login")
             else -> Unit
         }
     }
-
-    val postsState = viewModel.posts.observeAsState(initial = emptyList())
-    val posts = postsState.value
+    val posts by viewModel.posts.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -100,9 +96,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
 
 @Composable
 fun PostItem(post: Post, navController: NavController, viewModel: PostViewModel) {
-
-
-    val commentCount = viewModel.getCommentCountLive(post.id).observeAsState(initial = 0)
+    val commentCount by viewModel.getCommentCountFlow(post.id).collectAsState(initial = 0)
 
     fun formatDate(date: Date): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
@@ -170,7 +164,7 @@ fun PostItem(post: Post, navController: NavController, viewModel: PostViewModel)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "${commentCount.value} comments",
+                    "$commentCount comments",
                     color = Color(0xFFE63946),
                     fontWeight = FontWeight.Bold
                 )

@@ -27,6 +27,7 @@ tensorflowLiteMetadata = "0.4.4"
 tensorflowLiteGpu = "2.12.0"
 tensorflowLiteSupportVersion = "0.4.4"
 firebaseStorageKtx = "21.0.1"
+constraintlayout = "2.2.1"
 
 [libraries]
 #noinspection SimilarGradleDependency
@@ -75,6 +76,7 @@ tensorflow-lite-gpu = { group = "org.tensorflow", name = "tensorflow-lite-gpu", 
 #noinspection SimilarGradleDependency
 tensorflow-lite-support-v044 = { module = "org.tensorflow:tensorflow-lite-support", version.ref = "tensorflowLiteSupportVersion" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 
 [plugins]

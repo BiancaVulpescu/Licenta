@@ -9,26 +9,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.drivocare.data.Comment
-import com.example.drivocare.data.User
 import com.example.drivocare.viewmodel.PostDetailViewModel
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -39,8 +29,10 @@ import java.util.*
 @Composable
 fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController: NavController, authViewModel: AuthViewModel, viewModel: PostDetailViewModel)
 {
-    val usernameState = authViewModel.currentUsername.collectAsState()
-    val username = usernameState.value ?: "User"
+    val username by authViewModel.currentUsername.collectAsState()
+    val post by viewModel.post.collectAsState()
+    val comments by viewModel.comments.collectAsState()
+    val commentText by viewModel.commentText.collectAsState()
 
     fun formatDate(date: Date): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
@@ -51,10 +43,6 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
         viewModel.loadComments(postId)
     }
 
-    val post = viewModel.post.observeAsState()
-    val comments = viewModel.comments.observeAsState(emptyList())
-    val commentText = viewModel.commentText.observeAsState("")
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -64,7 +52,7 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                 .weight(1f)
                 .padding(16.dp)
         ) {
-            post.value?.let { currentPost ->
+            post?.let { currentPost ->
                 item {
                     Card(
                         modifier = Modifier
@@ -106,10 +94,8 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Post content
                             currentPost.contentText?.let { Text(it) }
 
-                            // Post image if available
                             currentPost.imageUrl?.let {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 AsyncImage(
@@ -126,7 +112,7 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                 }
             }
 
-            items(comments.value) { comment ->
+            items(comments) { comment ->
                 CommentItem(comment = comment)
             }
         }
@@ -144,7 +130,7 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextField(
-                    value = commentText.value,
+                    value = commentText,
                     onValueChange = { viewModel.setCommentText(it) },
                     placeholder = { Text("ceva de add comment") },
                     modifier = Modifier

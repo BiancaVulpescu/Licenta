@@ -42,7 +42,7 @@ fun MyCarsPage(
     addCarViewModel: AddCarViewModel,
     viewModel: MyCarsViewModel = viewModel()
 ) {
-    val authState = authViewModel.authState.observeAsState()
+    val authState by authViewModel.authState.collectAsState()
     val cars = viewModel.cars.observeAsState(listOf())
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -57,10 +57,10 @@ fun MyCarsPage(
         animationSpec = tween(durationMillis = 300)
     )
 
-    LaunchedEffect(authState.value) {
-        if (authState.value is AuthState.Authenticated) {
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
             viewModel.loadCarsForCurrentUser()
-        } else if (authState.value is AuthState.Unauthenticated) {
+        } else if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }

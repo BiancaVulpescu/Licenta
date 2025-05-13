@@ -1,81 +1,82 @@
 package com.example.drivocare.repositories
 
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.example.drivocare.data.Comment
 import com.example.drivocare.data.Post
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
 
-class PostRepository {
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance().reference
+class PostRepository : IPostRepository {
+    private val firestore = FirebaseFirestore.getInstance()
+    private val storageRef = FirebaseStorage.getInstance().reference
 
-    fun uploadImage(imageUri: Uri, onResult: (String?) -> Unit) {
-        val imageRef = storage.child("post_images/${UUID.randomUUID()}.jpg")
-        imageRef.putFile(imageUri)
+    override suspend fun uploadImage(uri: Uri): String? = suspendCancellableCoroutine { cont ->
+        val imageRef = storageRef.child("post_images/${UUID.randomUUID()}.jpg")
+        imageRef.putFile(uri)
             .addOnSuccessListener {
-                imageRef.downloadUrl.addOnSuccessListener { uri ->
-                    onResult(uri.toString())
+                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    cont.resume(downloadUri.toString(), null)
                 }
             }
             .addOnFailureListener {
-                onResult(null)
+                cont.resume(null, null)
             }
     }
 
-    fun addPost(post: Post): Task<Void> {
+    override fun addPost(post: Post, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         val document = firestore.collection("posts").document()
-        return document.set(post.copy(id = document.id))
+        document.set(post.copy(id = document.id))
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onFailure(e.message ?: "Failed to add post") }
     }
-    fun getPost(postId: String): Task<DocumentSnapshot> {
-        return firestore.collection("posts").document(postId).get()
-    }
-    fun getPosts(): LiveData<List<Post>> {
-        val postsLiveData = MutableLiveData<List<Post>>()
-        firestore.collection("posts")
+
+    override fun getPosts(): Flow<List<Post>> = callbackFlow {
+        val listener = firestore.collection("posts")
             .orderBy("time", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, _ ->
-                postsLiveData.value = snapshot?.toObjects(Post::class.java) ?: emptyList()
+                trySend(snapshot?.toObjects(Post::class.java) ?: emptyList())
             }
-        return postsLiveData
+
+        awaitClose { listener.remove() }
     }
 
-    fun addComment(postId: String, comment: Comment): Task<DocumentReference> {
-        return firestore.collection("posts")
+    override fun addComment(postId: String, comment: Comment, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        firestore.collection("posts")
             .document(postId)
             .collection("comments")
             .add(comment)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onFailure(e.message ?: "Failed to add comment") }
     }
 
-    fun getComments(postId: String): LiveData<List<Comment>> {
-        val commentsLiveData = MutableLiveData<List<Comment>>()
-        firestore.collection("posts")
+    override fun getComments(postId: String): Flow<List<Comment>> = callbackFlow {
+        val listener = firestore.collection("posts")
             .document(postId)
             .collection("comments")
             .orderBy("time", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, _ ->
-                commentsLiveData.value = snapshot?.toObjects(Comment::class.java) ?: emptyList()
+                trySend(snapshot?.toObjects(Comment::class.java) ?: emptyList())
             }
-        return commentsLiveData
+
+        awaitClose { listener.remove() }
     }
-    fun observeCommentCount(postId: String): LiveData<Int> {
-        val countLiveData = MutableLiveData<Int>()
-        firestore.collection("posts")
+
+    override fun observeCommentCount(postId: String): Flow<Int> = callbackFlow {
+        val listener = firestore.collection("posts")
             .document(postId)
             .collection("comments")
             .addSnapshotListener { snapshot, _ ->
-                countLiveData.value = snapshot?.size() ?: 0
+                trySend(snapshot?.size() ?: 0)
             }
-        return countLiveData
-    }
 
+        awaitClose { listener.remove() }
+    }
 
 
 }

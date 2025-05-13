@@ -29,7 +29,7 @@ fun ScanningPage(
     authViewModel: AuthViewModel,
     scanningViewModel: ScanningViewModel = viewModel()
 ) {
-    val authState = authViewModel.authState.observeAsState()
+    val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
@@ -73,8 +73,8 @@ fun ScanningPage(
         onDispose { }
     }
 
-    LaunchedEffect(authState.value) {
-        if (authState.value is AuthState.Unauthenticated) {
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }

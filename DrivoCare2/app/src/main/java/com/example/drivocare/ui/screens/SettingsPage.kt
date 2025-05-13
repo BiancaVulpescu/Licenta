@@ -56,23 +56,26 @@ import com.example.drivocare.viewmodel.PostViewModel
 
 @Composable
 fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, postViewModel: PostViewModel, myCarsViewModel: MyCarsViewModel = viewModel()) {
-    val authState= authViewModel.authState.observeAsState()
+    val authState by authViewModel.authState.collectAsState()
     val cars by myCarsViewModel.cars.observeAsState(listOf()) // use cars.value later
     val selectedCarIndex = myCarsViewModel.selectedCarIndex
+
+    val username by authViewModel.currentUsername.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     var showChangeUsernameDialog by remember { mutableStateOf(false) }
-    val usernameState = authViewModel.currentUsername.collectAsState()
-    val username = usernameState.value
     var newUsername by remember { mutableStateOf("") }
+
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var passwordChangeError by remember { mutableStateOf<String?>(null) }
+
     var colorBlue =Color(0xFF479195)
-    LaunchedEffect(authState.value) {
-        if (authState.value is AuthState.Authenticated) {
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
             myCarsViewModel.loadCarsForCurrentUser()
-        } else if (authState.value is AuthState.Unauthenticated) {
+        } else if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }
@@ -217,7 +220,7 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
             }
             TextButton(
                 onClick = { authViewModel.logout()
-                            postViewModel.clearDraft()
+                            postViewModel.clearPost()
                           },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF5F5F5)),
                 modifier = Modifier.fillMaxWidth(),
@@ -329,7 +332,9 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
                             TextButton(onClick = {
                                 authViewModel.updateUsername(
                                     newUsername,
-                                    onSuccess = { showChangeUsernameDialog = false },
+                                    onSuccess = {
+                                        authViewModel.fetchCurrentUsername()
+                                        showChangeUsernameDialog = false },
                                     onError = { }
                                 )
                             }) {

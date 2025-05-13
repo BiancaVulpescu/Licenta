@@ -15,13 +15,12 @@ import com.example.drivocare.viewmodel.PostDetailViewModel
 import com.example.drivocare.viewmodel.PostViewModel
 
 @Composable
-fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel) {
+fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, postViewModel: PostViewModel, postDetailViewModel: PostDetailViewModel) {
     val navController = rememberNavController()
     val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
     val noBottomNavRoutes = listOf("login", "register")
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val postViewModel: PostViewModel = viewModel()
     Scaffold(
         topBar = {
             if (currentRoute in showTopBarRoutes) {
@@ -64,7 +63,6 @@ fun Navigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, addC
             composable("postDetail/{postId}", arguments = listOf(navArgument("postId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val postId = backStackEntry.arguments?.getString("postId") ?: ""
-                val postDetailViewModel: PostDetailViewModel = viewModel()
                 PostDetailPage(modifier = modifier, postId = postId, navController = navController, authViewModel = authViewModel, viewModel = postDetailViewModel)
             }
         }
