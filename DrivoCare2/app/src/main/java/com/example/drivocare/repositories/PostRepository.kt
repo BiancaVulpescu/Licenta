@@ -1,5 +1,6 @@
 package com.example.drivocare.repositories
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.drivocare.data.Comment
@@ -9,9 +10,25 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 class PostRepository {
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val storage = FirebaseStorage.getInstance().reference
+
+    fun uploadImage(imageUri: Uri, onResult: (String?) -> Unit) {
+        val imageRef = storage.child("post_images/${UUID.randomUUID()}.jpg")
+        imageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                    onResult(uri.toString())
+                }
+            }
+            .addOnFailureListener {
+                onResult(null)
+            }
+    }
 
     fun addPost(post: Post): Task<Void> {
         val document = firestore.collection("posts").document()

@@ -1,5 +1,7 @@
 package com.example.drivocare.viewmodel
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,20 +9,25 @@ import com.example.drivocare.data.Post
 import com.example.drivocare.repositories.PostRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class PostViewModel : ViewModel() {
     private val repository = PostRepository()
     private val auth = FirebaseAuth.getInstance()
+
+    private val _cachedUsername = MutableLiveData<String?>()
+    val cachedUsername: LiveData<String?> = _cachedUsername
+
     val posts: LiveData<List<Post>> = repository.getPosts()
-    private val _isPostCreated = MutableLiveData<Boolean>(false)
+
+    private val _isPostCreated = MutableLiveData(false)
     val isPostCreated: LiveData<Boolean> = _isPostCreated
 
-    private val _postText = MutableLiveData<String>("")
+    private val _postText = MutableLiveData("")
     val postText: LiveData<String> = _postText
 
-    private val _postImageUrl = MutableLiveData<String?>(null)
-    val postImageUrl: LiveData<String?> = _postImageUrl
-
+    private val _selectedImageUri = MutableLiveData<Uri?>(null)
+    val selectedImageUri: LiveData<Uri?> = _selectedImageUri
     fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
     }
@@ -28,32 +35,63 @@ class PostViewModel : ViewModel() {
         _postText.value = text
     }
 
-    fun setPostImageUrl(url: String?) {
-        _postImageUrl.value = url
-    }
-
-    fun addPost() {
-        val auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
-
-        if (currentUser != null && (!_postText.value.isNullOrBlank() || !_postImageUrl.value.isNullOrBlank())) {
-            val post = Post(
-                userId = currentUser.uid,
-                username = currentUser.displayName ?: "User",
-                contentText = _postText.value,
-                imageUrl = _postImageUrl.value,
-                time = Timestamp.now()
-            )
-
-            repository.addPost(post).addOnSuccessListener {
-                _postText.value = ""
-                _postImageUrl.value = null
-                _isPostCreated.value = true
-            }
-        }
+    fun setSelectedImageUri(uri: Uri?) {
+        _selectedImageUri.value = uri
     }
 
     fun resetPostCreatedState() {
         _isPostCreated.value = false
+    }
+    fun loadUsernameIfNeeded() {
+        if (_cachedUsername.value != null) return
+
+        val userId = auth.currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                _cachedUsername.value = document.getString("username") ?: "User"
+            }
+            .addOnFailureListener { e ->
+                Log.e("PostViewModel", "Failed to fetch username: ${e.message}", e)
+            }
+    }
+
+    fun addPost() {
+        val currentUser = auth.currentUser ?: return
+        val text = _postText.value
+        val imageUri = _selectedImageUri.value
+        val username = _cachedUsername.value ?: "Username"
+        val userId = currentUser.uid
+
+        if (text.isNullOrBlank() && imageUri == null) return
+
+        if (imageUri != null) {
+            repository.uploadImage(imageUri) { imageUrl ->
+                if (imageUrl != null) {
+                    postToFirestore(userId, username, text, imageUrl)
+                } else {
+                    Log.e("PostViewModel", "Image upload failed. Post not created.")
+                }
+            }
+        } else {
+            postToFirestore(userId, username, text, null)
+        }
+    }
+
+    private fun postToFirestore(userId: String, username: String, text: String?, imageUrl: String?) {
+        val post = Post(
+            userId = userId,
+            username = username,
+            contentText = text,
+            imageUrl = imageUrl,
+            time = Timestamp.now()
+        )
+        repository.addPost(post).addOnSuccessListener {
+            _postText.value = ""
+            _selectedImageUri.value = null
+            _isPostCreated.value = true
+        }.addOnFailureListener { e ->
+            Log.e("PostViewModel", "Failed to save post: ${e.message}", e)
+        }
     }
 }

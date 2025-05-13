@@ -56,6 +56,9 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
         val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return formatter.format(date)
     }
+    LaunchedEffect(Unit) {
+        viewModel.loadUsernameIfNeeded()
+    }
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("login")

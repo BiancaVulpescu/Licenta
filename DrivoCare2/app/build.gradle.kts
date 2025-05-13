@@ -85,4 +85,7 @@ dependencies {
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.extensions)
     implementation (libs.guava)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.activity.compose) // For image picker launcher
+
 }
