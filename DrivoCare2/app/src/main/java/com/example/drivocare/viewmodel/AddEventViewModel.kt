@@ -1,28 +1,36 @@
 package com.example.drivocare.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.drivocare.data.Event
-import com.example.drivocare.repositories.EventRepository
+import com.example.drivocare.usecase.AddEventUseCase
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
-class AddEventViewModel : ViewModel() {
-    private val repository = EventRepository()
+class AddEventViewModel(private val addEventUseCase: AddEventUseCase) : ViewModel() {
 
-    var description = mutableStateOf("")
-    var notificationSet = mutableStateOf(false)
-    var title = mutableStateOf("")
-    var startDate = mutableStateOf("")
-    var endDate = mutableStateOf("")
-    var startTime = mutableStateOf("")
-    var endTime= mutableStateOf("")
+    val title = MutableStateFlow("")
+    val description = MutableStateFlow("")
+    val startDate = MutableStateFlow("")
+    val startTime = MutableStateFlow("")
+    val endDate = MutableStateFlow("")
+    val endTime = MutableStateFlow("")
+    val notificationSet = MutableStateFlow(false)
 
-    fun buildValidatedEvent(): Result<Event> {
+    fun reset() {
+        title.value = ""
+        description.value = ""
+        startDate.value = ""
+        startTime.value = ""
+        endDate.value = ""
+        endTime.value = ""
+        notificationSet.value = false
+    }
+
+    fun buildValidatedEvent(userId: String, carId: String): Result<Event> {
         val dateFormat = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
-        val startDateTimeStr="${startDate.value.trim()} ${startTime.value.trim().ifBlank { "00:00" }}"
+        val startDateTimeStr = "${startDate.value.trim()} ${startTime.value.trim().ifBlank { "00:00" }}"
 
         val start = try {
             Timestamp(dateFormat.parse(startDateTimeStr)!!)
@@ -47,23 +55,19 @@ class AddEventViewModel : ViewModel() {
 
         return Result.success(
             Event(
-                description = description.value,
-                notificationSet = notificationSet.value,
+                id = "",
+                carId = carId,
+                userId = userId,
                 title = title.value,
+                description = description.value,
                 startDate = start,
-                endDate = end
+                endDate = end,
+                notificationSet = notificationSet.value
             )
         )
     }
-    fun saveEvent(carId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        val result = buildValidatedEvent()
-        result.fold(
-            onSuccess = { event ->
-                repository.addEvent(carId, event, onSuccess, onError)
-            },
-            onFailure = { ex ->
-                onError(ex.message ?: "Invalid event")
-            }
-        )
+
+    fun saveEvent(event: Event, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        addEventUseCase(event, event.carId, onSuccess, onError)
     }
 }

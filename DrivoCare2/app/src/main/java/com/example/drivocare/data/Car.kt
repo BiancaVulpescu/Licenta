@@ -5,5 +5,6 @@ data class Car (
     val year: Int = 2010 ,
     val model: String = "",
     val number: String = "",
-    val id : String = ""
+    val id : String = "",
+    val userId: String = ""
 )

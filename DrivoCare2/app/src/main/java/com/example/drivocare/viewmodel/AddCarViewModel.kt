@@ -1,62 +1,32 @@
 package com.example.drivocare.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.drivocare.data.Car
 import com.example.drivocare.data.Event
-import com.example.drivocare.repositories.CarRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.drivocare.usecase.AddCarUseCase
+import com.example.drivocare.usecase.AddEventUseCase
+import com.example.drivocare.usecase.EditCarUseCase
+import kotlinx.coroutines.flow.MutableStateFlow
 
-class AddCarViewModel : ViewModel() {
-    private val repository = CarRepository()
-    var brand = mutableStateOf("")
-    var year = mutableStateOf("")
-    var model = mutableStateOf("")
-    var number = mutableStateOf("")
-    var isEditMode = mutableStateOf(false)
+class AddCarViewModel(
+    private val addCarUseCase: AddCarUseCase,
+    private val editCarUseCase: EditCarUseCase,
+    private val addEventUseCase: AddEventUseCase
+) : ViewModel() {
+
+    val brand = MutableStateFlow("")
+    val model = MutableStateFlow("")
+    val year = MutableStateFlow("")
+    val number = MutableStateFlow("")
+    val isEditMode = MutableStateFlow(false)
     var editingCarId: String? = null
 
-    val pendingEvents = mutableStateListOf<Event>()
+    val pendingEvents = mutableListOf<Event>()
+
     fun addPendingEvent(event: Event) {
         pendingEvents.add(event)
     }
 
-    fun saveCar(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
-        val yearInt = year.value.toIntOrNull()
-        if (yearInt == null) {
-            onError("Year must be a valid number")
-            return
-        }
-
-        val car = Car(brand.value, yearInt, model.value, number.value)
-
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val carRef = FirebaseFirestore.getInstance()
-            .collection("users").document(userId)
-            .collection("cars")
-
-        if (isEditMode.value && editingCarId != null) {
-            carRef.document(editingCarId!!).set(car)
-                .addOnSuccessListener {
-                    onSuccess(editingCarId!!)
-                }
-                .addOnFailureListener {
-                    onError(it.message ?: "Failed to edit car information")
-                }
-        } else {
-            repository.addCar(car, onSuccess = { carId ->
-                val docRef = carRef.document(carId)
-                pendingEvents.forEach { event ->
-                    docRef.collection("events").add(event)
-                        .addOnFailureListener { Log.e("SaveCar", "Failed to save event: ${it.message}") }
-                }
-                onSuccess(carId)
-            }, onError = onError)
-        }
-    }
     fun reset() {
         brand.value = ""
         model.value = ""
@@ -67,4 +37,31 @@ class AddCarViewModel : ViewModel() {
         pendingEvents.clear()
     }
 
+    fun saveCar(userId: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        val car = Car(
+            id = editingCarId ?: "",
+            userId = userId,
+            brand = brand.value,
+            model = model.value,
+            year = year.value.toIntOrNull() ?: 0,
+            number = number.value
+        )
+
+        if (isEditMode.value && editingCarId != null) {
+            editCarUseCase(editingCarId!!, car, {
+                onSuccess()
+            }, onError)
+        } else {
+            if (pendingEvents.isNotEmpty()) {
+                addCarUseCase.addCarWithEvents(car, pendingEvents, { carId ->
+                    pendingEvents.clear()
+                    onSuccess()
+                }, onError)
+            } else {
+                addCarUseCase(car, {
+                    onSuccess()
+                }, onError)
+            }
+        }
+    }
 }

@@ -53,12 +53,13 @@ import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
 import com.example.drivocare.viewmodel.PostViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, postViewModel: PostViewModel, myCarsViewModel: MyCarsViewModel = viewModel()) {
+fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, addCarViewModel: AddCarViewModel, postViewModel: PostViewModel, myCarsViewModel: MyCarsViewModel ) {
     val authState by authViewModel.authState.collectAsState()
-    val cars by myCarsViewModel.cars.observeAsState(listOf()) // use cars.value later
-    val selectedCarIndex = myCarsViewModel.selectedCarIndex
+    val cars by myCarsViewModel.cars.collectAsState()
+    val selectedCarIndex by myCarsViewModel.selectedCarIndex.collectAsState()
 
     val username by authViewModel.currentUsername.collectAsState()
     var expanded by remember { mutableStateOf(false) }
@@ -71,22 +72,22 @@ fun SettingsPage(modifier: Modifier = Modifier, navController: NavController, au
     var passwordChangeError by remember { mutableStateOf<String?>(null) }
 
     var colorBlue =Color(0xFF479195)
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     LaunchedEffect(authState) {
-        if (authState is AuthState.Authenticated) {
-            myCarsViewModel.loadCarsForCurrentUser()
+        if (authState is AuthState.Authenticated && userId != null) {
+            myCarsViewModel.loadCarsForUser(userId)
         } else if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }
 
-    LaunchedEffect(myCarsViewModel.selectedCarIndex.value, cars) {
-        val currentCar = cars.getOrNull(myCarsViewModel.selectedCarIndex.value)
+    LaunchedEffect(selectedCarIndex, cars) {
+        val currentCar = cars.getOrNull(selectedCarIndex)
         if (currentCar != null) {
             myCarsViewModel.loadEventsForCar(currentCar.id)
         }
     }
-
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 300)

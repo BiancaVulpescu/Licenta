@@ -1,18 +1,13 @@
 package com.example.drivocare.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.drivocare.data.AuthState
-import com.example.drivocare.repositories.AuthRepository
 import com.example.drivocare.repositories.IAuthRepository
 import com.example.drivocare.usecase.LoginUseCase
 import com.example.drivocare.usecase.RegisterUseCase
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class AuthViewModel (
     private val loginUseCase: LoginUseCase,
