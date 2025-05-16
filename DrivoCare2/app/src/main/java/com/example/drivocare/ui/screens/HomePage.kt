@@ -28,9 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,13 +60,15 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
         }
     }
     val posts by viewModel.posts.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filteredPosts by viewModel.filteredPosts.collectAsState()
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         OutlinedTextField(
-            value = "",
-            onValueChange = { },
+            value = searchQuery,
+            onValueChange = { viewModel.setSearchQuery(it) },
             placeholder = { Text("Search for answers or questions") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
             modifier = Modifier
@@ -87,7 +86,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
                 .padding(horizontal = 16.dp)
                 .weight(1f)
         ) {
-            items(posts, key = { it.id }) { post ->
+            items(filteredPosts, key = { it.id }) { post ->
                 PostItem(post = post, navController = navController, viewModel = viewModel)
             }
         }

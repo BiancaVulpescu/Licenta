@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,13 +25,17 @@ fun MyPostsPage(
     viewModel: PostViewModel
 ) {
     val posts by viewModel.posts.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
 
     val currentUserId = remember {
         FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
     }
 
-    val myPosts = remember(posts, currentUserId) {
-        posts.filter { it.userId == currentUserId }
+    val myPosts = remember(posts, currentUserId, searchQuery) {
+        posts.filter {
+            it.userId == currentUserId &&
+                    (searchQuery.isBlank() || it.contentText?.contains(searchQuery, ignoreCase = true) == true)
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -42,6 +47,15 @@ fun MyPostsPage(
                 Text("You have no posts yet.", fontSize = 18.sp)
             }
         } else {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search your posts...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

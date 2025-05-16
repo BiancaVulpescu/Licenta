@@ -12,4 +12,6 @@ interface ICarRepository {
     fun updateCar(carId: String, car: Car, onSuccess: () -> Unit, onFailure: (String) -> Unit)
     fun deleteCar(carId: String, onSuccess: () -> Unit, onFailure: (String) -> Unit)
     fun addEvent(event: Event, carId: String, onSuccess: () -> Unit, onFailure: (String) -> Unit)
+    fun getFutureEventsForUser(userId: String): Flow<List<Event>>
+
 }

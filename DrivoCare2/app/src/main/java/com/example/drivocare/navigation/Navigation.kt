@@ -13,6 +13,7 @@ import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AddEventViewModel
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.MyCarsViewModel
+import com.example.drivocare.viewmodel.NotificationViewModel
 import com.example.drivocare.viewmodel.PostDetailViewModel
 import com.example.drivocare.viewmodel.PostViewModel
 @Composable
@@ -23,7 +24,8 @@ fun Navigation(
     myCarsViewModel: MyCarsViewModel,
     addEventViewModel: AddEventViewModel,
     postViewModel: PostViewModel,
-    postDetailViewModel: PostDetailViewModel
+    postDetailViewModel: PostDetailViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
     val navController = rememberNavController()
     val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
@@ -40,7 +42,7 @@ fun Navigation(
             composable("home") { HomePage(modifier, navController, authViewModel, postViewModel) }
             composable("myposts") { MyPostsPage(modifier, navController, authViewModel, postViewModel) }
             composable("settings") { SettingsPage(modifier, navController, authViewModel, addCarViewModel, postViewModel, myCarsViewModel) }
-            composable("inbox") { InboxPage(modifier, navController, authViewModel) }
+            composable("inbox") { InboxPage(modifier, navController, authViewModel, notificationViewModel) }
             composable("newpost") { NewPostPage(modifier, navController, authViewModel, postViewModel) }
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
             composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }

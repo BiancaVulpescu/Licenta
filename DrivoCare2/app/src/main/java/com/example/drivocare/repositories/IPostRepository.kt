@@ -12,4 +12,5 @@ interface IPostRepository {
     fun observeCommentCount(postId: String): Flow<Int>
     fun addComment(postId: String, comment: Comment, onSuccess: () -> Unit, onFailure: (String) -> Unit)
     fun getComments(postId: String): Flow<List<Comment>>
+    fun getAllComments(): Flow<List<Comment>>
 }

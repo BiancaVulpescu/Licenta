@@ -4,10 +4,12 @@ import com.example.drivocare.data.Car
 import com.example.drivocare.data.Event
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import java.util.Date
 
 class CarRepository : ICarRepository {
 
@@ -136,5 +138,21 @@ class CarRepository : ICarRepository {
                     .addOnFailureListener { onFailure(it.message ?: "Error saving events") }
             }
             .addOnFailureListener { onFailure(it.message ?: "Error adding car") }
+    }
+    override fun getFutureEventsForUser(userId: String): Flow<List<Event>> = callbackFlow {
+        val now = Date()
+        val sevenDaysLater = Date(now.time + 7 * 24 * 60 * 60 * 1000)
+
+        val query = firestore.collectionGroup("events")
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("notificationSet", true)
+            .whereLessThanOrEqualTo("endDate", sevenDaysLater)
+
+        val registration: ListenerRegistration = query.addSnapshotListener { snapshot, _ ->
+            val events = snapshot?.toObjects(Event::class.java) ?: emptyList()
+            trySend(events)
+        }
+
+        awaitClose { registration.remove() }
     }
 }

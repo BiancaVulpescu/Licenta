@@ -66,6 +66,19 @@ class PostRepository : IPostRepository {
 
         awaitClose { listener.remove() }
     }
+    override fun getAllComments(): Flow<List<Comment>> = callbackFlow {
+        val listener = firestore.collectionGroup("comments")
+            .addSnapshotListener { snapshot, _ ->
+                val commentList = snapshot?.documents?.mapNotNull { doc ->
+                    val comment = doc.toObject(Comment::class.java)
+                    val postId = doc.reference.path.split("/")[1]
+                    comment?.copy(postId = postId)
+                } ?: emptyList()
+                trySend(commentList)
+            }
+        awaitClose { listener.remove() }
+    }
+
 
     override fun observeCommentCount(postId: String): Flow<Int> = callbackFlow {
         val listener = firestore.collection("posts")

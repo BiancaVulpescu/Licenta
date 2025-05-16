@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         val addCarViewModel = AddCarViewModel(addCarUseCase, editCarUseCase, addEventUseCase)
         val myCarsViewModel = MyCarsViewModel(loadCarsUseCase, loadEventsUseCase)
         val addEventViewModel = AddEventViewModel(addEventUseCase)
+        val notificationViewModel = NotificationViewModel(application, postRepository, carRepository)
 
         setContent {
             DrivoCareTheme {
@@ -51,7 +52,8 @@ class MainActivity : ComponentActivity() {
                         myCarsViewModel = myCarsViewModel,
                         postViewModel = postViewModel,
                         postDetailViewModel = postDetailViewModel,
-                        addEventViewModel = addEventViewModel
+                        addEventViewModel = addEventViewModel,
+                        notificationViewModel= notificationViewModel
                     )
                 }
             }

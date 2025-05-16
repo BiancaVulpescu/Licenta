@@ -13,6 +13,7 @@ import com.example.drivocare.repositories.IPostRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
 
 class PostViewModel(
     private val addPostUseCase: AddPostUseCase,
@@ -29,6 +30,18 @@ class PostViewModel(
 
     val posts: StateFlow<List<Post>> = repository.getPosts()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    val filteredPosts: StateFlow<List<Post>> = combine(_searchQuery, posts) { query, allPosts ->
+        if (query.isBlank()) allPosts
+        else allPosts.filter { it.contentText?.contains(query, ignoreCase = true) == true }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
 
     fun setPostText(text: String) {
         _postText.value = text
