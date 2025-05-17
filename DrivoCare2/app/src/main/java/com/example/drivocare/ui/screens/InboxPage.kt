@@ -1,5 +1,6 @@
 package com.example.drivocare.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +28,7 @@ fun InboxPage(
 ) {
     val notifications by viewModel.notifications.collectAsState()
 
+    Log.d("InboxDebug", "Fetched ${notifications} ")
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -72,8 +74,9 @@ fun NotificationCard(item: NotificationItem) {
                 }
 
                 is NotificationItem.CarEventNotification -> {
-                    Text("Upcoming: ${item.name}", fontWeight = FontWeight.Bold)
+                    Text("Upcoming: ${item.title}", fontWeight = FontWeight.Bold)
                     Text("Ends: ${dateFormat.format(item.endDate)}", fontSize = 12.sp, color = Color.Gray)
+                    Text("Type: ${item::class.simpleName}") // shows whether it's CarEventNotification or CommentNotification
                 }
             }
         }

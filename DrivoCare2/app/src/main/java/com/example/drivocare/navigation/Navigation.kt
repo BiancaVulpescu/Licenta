@@ -58,6 +58,10 @@ fun Navigation(
                 val postId = it.arguments?.getString("postId") ?: ""
                 PostDetailPage(modifier, postId, navController, authViewModel, postDetailViewModel)
             }
+            composable("warning/{id}") { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id") ?: ""
+                WarningLightPage(id = id)
+            }
         }
     }
 }

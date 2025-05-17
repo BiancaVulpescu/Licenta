@@ -2,6 +2,7 @@ package com.example.drivocare.viewmodel
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drivocare.data.Comment
@@ -43,6 +44,10 @@ class NotificationViewModel(
                 postRepository.getAllComments(),
                 carRepository.getFutureEventsForUser(userId)
             ) { posts, comments, events ->
+                Log.d("InboxDebug", "Fetched ${events.size} events")
+                events.forEach {
+                    Log.d("InboxDebug", "Event: ${it.title}, endDate=${it.endDate.toDate()}, notificationSet=${it.notificationSet}")
+                }
 
             val myPostIds = posts.filter { it.userId == userId }.map { it.id }
 
@@ -56,15 +61,16 @@ class NotificationViewModel(
 
                 val upcomingEvents = events.filter {
                     it.notificationSet &&
-                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) &&
-                            !wasEventShownToday(it.id)
+                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) //&&
+                           // !wasEventShownToday(it.id)
                 }
 
+                Log.d("InboxDebug", "Filtered to ${upcomingEvents.size} upcoming events")
                 val carEventNotifs = upcomingEvents.map {
                     markEventAsShownToday(it.id)
                     CarEventNotification(
                         eventId = it.id,
-                        name = it.title,
+                        title = it.title,
                         endDate = it.endDate.toDate()
                     )
                 }

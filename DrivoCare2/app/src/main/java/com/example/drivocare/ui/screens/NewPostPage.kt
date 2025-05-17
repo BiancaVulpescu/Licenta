@@ -48,7 +48,9 @@ fun NewPostPage(
     LaunchedEffect(isPostCreated) {
         if (isPostCreated) {
             viewModel.resetPostCreatedState()
-            navController.popBackStack()
+            navController.navigate("home") {
+                popUpTo("home") { inclusive = true }
+            }
         }
     }
 

@@ -53,26 +53,6 @@ fun ScanningPage(
         }
     }
 
-    DisposableEffect(Unit) {
-        val listener = context as android.app.Activity
-        val callback = object : ActivityCompat.OnRequestPermissionsResultCallback {
-            override fun onRequestPermissionsResult(
-                requestCode: Int,
-                permissions: Array<out String>,
-                grantResults: IntArray
-            ) {
-                if (requestCode == 0 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanningViewModel.updatePermissionState(true)
-                    scanningViewModel.startCamera(context, previewView, lifecycleOwner)
-                }
-            }
-        }
-        ActivityCompat.requestPermissions(
-            listener, arrayOf(Manifest.permission.CAMERA), 0
-        )
-        onDispose { }
-    }
-
     LaunchedEffect(authState) {
         if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")

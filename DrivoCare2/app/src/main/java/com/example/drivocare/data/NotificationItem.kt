@@ -11,7 +11,7 @@ sealed class NotificationItem(val id: String) {
 
     data class CarEventNotification(
         val eventId: String,
-        val name: String,
+        val title: String,
         val endDate: Date) :
         NotificationItem(eventId)
 }
