@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.tensorflow.lite.select.tf.ops)
     implementation(libs.tensorflow.lite.support.v044)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,4 +86,7 @@ dependencies {
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.extensions)
     implementation (libs.guava)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.activity.compose)
+
 }

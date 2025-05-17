@@ -29,7 +29,7 @@ fun ScanningPage(
     authViewModel: AuthViewModel,
     scanningViewModel: ScanningViewModel = viewModel()
 ) {
-    val authState = authViewModel.authState.observeAsState()
+    val authState by authViewModel.authState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
@@ -53,28 +53,8 @@ fun ScanningPage(
         }
     }
 
-    DisposableEffect(Unit) {
-        val listener = context as android.app.Activity
-        val callback = object : ActivityCompat.OnRequestPermissionsResultCallback {
-            override fun onRequestPermissionsResult(
-                requestCode: Int,
-                permissions: Array<out String>,
-                grantResults: IntArray
-            ) {
-                if (requestCode == 0 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    scanningViewModel.updatePermissionState(true)
-                    scanningViewModel.startCamera(context, previewView, lifecycleOwner)
-                }
-            }
-        }
-        ActivityCompat.requestPermissions(
-            listener, arrayOf(Manifest.permission.CAMERA), 0
-        )
-        onDispose { }
-    }
-
-    LaunchedEffect(authState.value) {
-        if (authState.value is AuthState.Unauthenticated) {
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }

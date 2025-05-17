@@ -1,6 +1,5 @@
 package com.example.drivocare.ui.screens
 
-import android.widget.CalendarView
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -10,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -22,34 +20,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.example.drivocare.R
-import com.example.drivocare.data.AuthState
-import com.example.drivocare.viewmodel.AuthViewModel
-import com.example.drivocare.viewmodel.MyCarsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.drivocare.viewmodel.AddCarViewModel
-import com.example.drivocare.viewmodel.CalendarViewModel
+import com.google.firebase.auth.FirebaseAuth
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.LocalDate
+import com.example.drivocare.viewmodel.MyCarsViewModel
+import com.example.drivocare.viewmodel.CalendarViewModel
+import com.example.drivocare.data.AuthState
+import com.example.drivocare.viewmodel.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyCarsPage(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel,
     addCarViewModel: AddCarViewModel,
-    viewModel: MyCarsViewModel = viewModel()
+    viewModel: MyCarsViewModel
 ) {
-    val authState = authViewModel.authState.observeAsState()
-    val cars = viewModel.cars.observeAsState(listOf())
+    val authState by authViewModel.authState.collectAsState()
+    val cars by viewModel.cars.collectAsState()
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    val selectedCarIndex by viewModel.selectedCarIndex
-    val events = viewModel.events.observeAsState(listOf())
+    val selectedCarIndex by viewModel.selectedCarIndex.collectAsState()
+    val events by viewModel.events.collectAsState()
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    val isLoading by viewModel.isLoading
+    val isLoading by viewModel.isLoading.collectAsState()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
     val arrowRotationDegree by animateFloatAsState(
@@ -57,20 +56,25 @@ fun MyCarsPage(
         animationSpec = tween(durationMillis = 300)
     )
 
-    LaunchedEffect(authState.value) {
-        if (authState.value is AuthState.Authenticated) {
-            viewModel.loadCarsForCurrentUser()
-        } else if (authState.value is AuthState.Unauthenticated) {
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid
+            if (!userId.isNullOrBlank()) {
+                viewModel.loadCarsForUser(userId)
+            }
+        } else if (authState is AuthState.Unauthenticated) {
             navController.navigate("login")
         }
     }
 
-    LaunchedEffect(viewModel.selectedCarIndex.value, cars.value) {
-        val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
+
+    LaunchedEffect(selectedCarIndex, cars) {
+        val currentCar = cars.getOrNull(selectedCarIndex)
         if (currentCar != null) {
             viewModel.loadEventsForCar(currentCar.id)
         }
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -91,22 +95,19 @@ fun MyCarsPage(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(modifier = Modifier.width(20.dp))
                         Icon(
-                            painter = painterResource(id = R.drawable.car),
+                            painter = painterResource(id = com.example.drivocare.R.drawable.car),
                             contentDescription = "Car icon",
                             tint = Color.Black,
                             modifier = Modifier.size(45.dp)
                         )
                         Spacer(modifier = Modifier.width(25.dp))
                         Column {
-                            val currentCar = cars.value.getOrNull(viewModel.selectedCarIndex.value)
+                            val currentCar = cars.getOrNull(selectedCarIndex)
                             Text(
-                                text = currentCar?.let { "${it.brand} ${it.model}" }
-                                    ?: "No car selected",
+                                text = currentCar?.let { "${it.brand} ${it.model}" } ?: "No car selected",
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleMedium
                             )
@@ -120,7 +121,7 @@ fun MyCarsPage(
                         }
                     }
                     Icon(
-                        painter = painterResource(id = R.drawable.arrow),
+                        painter = painterResource(id = com.example.drivocare.R.drawable.arrow),
                         contentDescription = if (expanded) "Collapse" else "Expand",
                         tint = Color.Black,
                         modifier = Modifier
@@ -136,18 +137,14 @@ fun MyCarsPage(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    cars.value.forEachIndexed { index, car ->
+                    cars.forEachIndexed { index, car ->
                         if (index != selectedCarIndex) {
                             Button(
                                 onClick = {
                                     viewModel.selectedCarIndex.value = index
                                     expanded = false
                                 },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(
-                                        0xFF9C141E
-                                    )
-                                ),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C141E)),
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RectangleShape,
                                 contentPadding = PaddingValues(5.dp)
@@ -158,7 +155,7 @@ fun MyCarsPage(
                                 ) {
                                     Spacer(modifier = Modifier.width(20.dp))
                                     Icon(
-                                        painter = painterResource(id = R.drawable.car),
+                                        painter = painterResource(id = com.example.drivocare.R.drawable.car),
                                         contentDescription = "Car icon",
                                         tint = Color.Black,
                                         modifier = Modifier.size(45.dp)
@@ -198,7 +195,7 @@ fun MyCarsPage(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.add),
+                                painter = painterResource(id = com.example.drivocare.R.drawable.add),
                                 contentDescription = "Add car",
                                 tint = Color.White,
                                 modifier = Modifier.size(35.dp)
@@ -216,7 +213,7 @@ fun MyCarsPage(
 
             CalendarViewModel(
                 month = currentMonth,
-                eventDates = events.value.map {
+                eventDates = events.map {
                     it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 },
                 onMonthChange = { direction ->
@@ -225,7 +222,8 @@ fun MyCarsPage(
                 onDateSelected = { selectedDate = it },
                 selectedDate = selectedDate
             )
-            val todayEvents = events.value.filter {
+
+            val todayEvents = events.filter {
                 val date = it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 date == selectedDate
             }
@@ -243,7 +241,7 @@ fun MyCarsPage(
                                 .padding(start = 12.dp)
                                 .width(8.dp)
                                 .heightIn(min = 44.dp)
-                                .background(Color(0xFF479195)) // blue line
+                                .background(Color(0xFF479195))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
@@ -259,36 +257,34 @@ fun MyCarsPage(
                         }
                     }
                 }
-                if (cars.value.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .clickable {
-                            val selectedCarId = cars.value.getOrNull(selectedCarIndex)?.id
-                            navController.navigate("addevent/$selectedCarId")
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
+                if (cars.isNotEmpty()) {
+                    Row(
                         modifier = Modifier
-                            .padding(start = 12.dp)
-                            .width(8.dp)
-                            .height(44.dp)
-                            .background(Color(0xFF479195))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Add event",
-                        color = Color(0xFF479195),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                            .padding(vertical = 4.dp)
+                            .clickable {
+                                val selectedCarId = cars.getOrNull(selectedCarIndex)?.id
+                                navController.navigate("addevent/$selectedCarId")
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .width(8.dp)
+                                .height(44.dp)
+                                .background(Color(0xFF479195))
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add event",
+                            color = Color(0xFF479195),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-                }
-
             }
-
         }
         if (isLoading) {
             Box(
@@ -307,6 +303,3 @@ fun MyCarsPage(
         }
     }
 }
-
-
-
