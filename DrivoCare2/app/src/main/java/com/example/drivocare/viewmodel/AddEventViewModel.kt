@@ -70,4 +70,33 @@ class AddEventViewModel(private val addEventUseCase: AddEventUseCase) : ViewMode
     fun saveEvent(event: Event, onSuccess: () -> Unit, onError: (String) -> Unit) {
         addEventUseCase(event, event.carId, onSuccess, onError)
     }
+    fun formatDateInput(input: String): String {
+        val raw = input.filter { it.isDigit() }
+        val builder = StringBuilder()
+
+        for (i in raw.indices) {
+            builder.append(raw[i])
+            if ((i == 1 || i == 3) && i != raw.lastIndex) {
+                builder.append('-')
+            }
+        }
+
+        return builder.toString()
+    }
+
+    fun formatTimeInput(input: String): String {
+        val raw = input.filter { it.isDigit() }
+        val builder = StringBuilder()
+
+        for (i in raw.indices) {
+            builder.append(raw[i])
+            if (i == 1 && i != raw.lastIndex) {
+                builder.append(':')
+            }
+        }
+
+        return builder.toString()
+    }
+
+
 }

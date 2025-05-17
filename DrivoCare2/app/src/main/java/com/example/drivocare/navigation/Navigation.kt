@@ -42,7 +42,7 @@ fun Navigation(
             composable("home") { HomePage(modifier, navController, authViewModel, postViewModel) }
             composable("myposts") { MyPostsPage(modifier, navController, authViewModel, postViewModel) }
             composable("settings") { SettingsPage(modifier, navController, authViewModel, addCarViewModel, postViewModel, myCarsViewModel) }
-            composable("inbox") { InboxPage(modifier, navController, authViewModel, notificationViewModel) }
+            composable("inbox") { InboxPage(modifier, navController, authViewModel, notificationViewModel, myCarsViewModel) }
             composable("newpost") { NewPostPage(modifier, navController, authViewModel, postViewModel) }
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
             composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }

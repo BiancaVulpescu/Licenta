@@ -1,6 +1,7 @@
 package com.example.drivocare.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.navigation.NavController
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.NotificationViewModel
 import com.example.drivocare.data.NotificationItem
+import com.example.drivocare.viewmodel.MyCarsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,8 +26,12 @@ fun InboxPage(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel,
-    viewModel: NotificationViewModel
+    viewModel: NotificationViewModel,
+    myCarsViewModel: MyCarsViewModel
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.loadNotifications()
+    }
     val notifications by viewModel.notifications.collectAsState()
 
     Log.d("InboxDebug", "Fetched ${notifications} ")
@@ -47,7 +53,7 @@ fun InboxPage(
         } else {
             LazyColumn {
                 items(notifications, key = { it.id }) { notif ->
-                    NotificationCard(notif)
+                    NotificationCard(notif, navController, myCarsViewModel)
                 }
             }
         }
@@ -55,15 +61,28 @@ fun InboxPage(
 }
 
 @Composable
-fun NotificationCard(item: NotificationItem) {
-    val dateFormat = remember {
-        SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    }
+fun NotificationCard(item: NotificationItem, navController: NavController, viewModel: MyCarsViewModel) {
+    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable {
+                when (item) {
+                    is NotificationItem.CommentNotification -> {
+                        navController.navigate("postDetail/${item.postId}")
+                    }
+
+                    is NotificationItem.CarEventNotification -> {
+                        val index = viewModel.cars.value.indexOfFirst { it.id == item.carId }
+                        if (index >= 0) {
+                            viewModel.selectedCarIndex.value = index
+                        }
+                        navController.navigate("mycars")
+                    }
+                }
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -76,7 +95,6 @@ fun NotificationCard(item: NotificationItem) {
                 is NotificationItem.CarEventNotification -> {
                     Text("Upcoming: ${item.title}", fontWeight = FontWeight.Bold)
                     Text("Ends: ${dateFormat.format(item.endDate)}", fontSize = 12.sp, color = Color.Gray)
-                    Text("Type: ${item::class.simpleName}") // shows whether it's CarEventNotification or CommentNotification
                 }
             }
         }

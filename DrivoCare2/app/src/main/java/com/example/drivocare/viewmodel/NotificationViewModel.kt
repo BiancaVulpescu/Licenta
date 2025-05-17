@@ -31,11 +31,12 @@ class NotificationViewModel(
     private val shownEventPrefs =
         app.getSharedPreferences("shown_car_event_notifications", Context.MODE_PRIVATE)
 
-    init {
-        loadNotifications()
-    }
+    private var hasLoaded = false
 
-    private fun loadNotifications() {
+    fun loadNotifications() {
+        if (hasLoaded) return
+        hasLoaded = true
+
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
         viewModelScope.launch {
@@ -44,12 +45,8 @@ class NotificationViewModel(
                 postRepository.getAllComments(),
                 carRepository.getFutureEventsForUser(userId)
             ) { posts, comments, events ->
-                Log.d("InboxDebug", "Fetched ${events.size} events")
-                events.forEach {
-                    Log.d("InboxDebug", "Event: ${it.title}, endDate=${it.endDate.toDate()}, notificationSet=${it.notificationSet}")
-                }
 
-            val myPostIds = posts.filter { it.userId == userId }.map { it.id }
+                val myPostIds = posts.filter { it.userId == userId }.map { it.id }
 
                 val commentNotifs = comments.filter { it.postId in myPostIds }.map {
                     CommentNotification(
@@ -61,8 +58,7 @@ class NotificationViewModel(
 
                 val upcomingEvents = events.filter {
                     it.notificationSet &&
-                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) //&&
-                           // !wasEventShownToday(it.id)
+                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
                 }
 
                 Log.d("InboxDebug", "Filtered to ${upcomingEvents.size} upcoming events")
@@ -71,7 +67,8 @@ class NotificationViewModel(
                     CarEventNotification(
                         eventId = it.id,
                         title = it.title,
-                        endDate = it.endDate.toDate()
+                        endDate = it.endDate.toDate(),
+                        carId = it.carId
                     )
                 }
 
@@ -81,9 +78,12 @@ class NotificationViewModel(
                         is CarEventNotification -> it.endDate
                     }
                 }
-            }.collect {
-                _notifications.value = it
-            }
+            }.distinctUntilChanged()
+                .onEach {
+                    if (it.isNotEmpty()) {
+                        _notifications.value = it
+                    }
+                }.launchIn(viewModelScope)
         }
     }
 

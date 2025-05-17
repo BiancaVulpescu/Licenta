@@ -3,6 +3,8 @@ package com.example.drivocare.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,7 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun AddEventPage(
     carId: String?,
     navController: NavController,
-    eventViewModel: AddEventViewModel = viewModel(),
+    eventViewModel: AddEventViewModel,
     carViewModel: AddCarViewModel
 ) {
     val context = LocalContext.current
@@ -224,28 +228,63 @@ fun AddEventPage(
 
 @Composable
 private fun EventDateTimeInputs(viewModel: AddEventViewModel) {
-    DateTimeRow("Starts", viewModel.startDate.collectAsState().value, viewModel.startTime.collectAsState().value) {
+    DateTimeRow("Starts", viewModel.startDate.collectAsState().value, viewModel.startTime.collectAsState().value, viewModel=viewModel) {
         viewModel.startDate.value = it.first
         viewModel.startTime.value = it.second
     }
     Divider(Modifier.padding(vertical = 8.dp), color = Color(0xFF479195))
-    DateTimeRow("Ends", viewModel.endDate.collectAsState().value, viewModel.endTime.collectAsState().value) {
+    DateTimeRow("Ends", viewModel.endDate.collectAsState().value, viewModel.endTime.collectAsState().value, viewModel= viewModel) {
         viewModel.endDate.value = it.first
         viewModel.endTime.value = it.second
     }
 }
-
 @Composable
-private fun DateTimeRow(label: String, date: String, time: String, onValueChange: (Pair<String, String>) -> Unit) {
+private fun DateTimeRow(
+    label: String,
+    date: String,
+    time: String,
+    viewModel: AddEventViewModel,
+    onValueChange: (Pair<String, String>) -> Unit
+) {
+    var dateField by remember { mutableStateOf(TextFieldValue(date)) }
+    var timeField by remember { mutableStateOf(TextFieldValue(time)) }
+
+    val dateInteraction = remember { MutableInteractionSource() }
+    val timeInteraction = remember { MutableInteractionSource() }
+
+    val isDateFocused by dateInteraction.collectIsFocusedAsState()
+    val isTimeFocused by timeInteraction.collectIsFocusedAsState()
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(label, color = Color(0xFF479195), fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
         Spacer(Modifier.width(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
             TextField(
-                value = date,
-                onValueChange = { onValueChange(it to time) },
-                placeholder = { Text("DD-MM-YYYY", color = Color.White) },
-                modifier = Modifier.weight(1f).height(50.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFF479195)),
+                value = dateField,
+                onValueChange = {
+                    val digits = it.text.filter { ch -> ch.isDigit() }.take(8)
+                    val formatted = buildString {
+                        digits.forEachIndexed { index, c ->
+                            append(c)
+                            if (index == 1 || index == 3) append('-')
+                        }
+                    }
+                    val newCursor = formatted.length
+                    dateField = TextFieldValue(formatted, TextRange(newCursor))
+                    onValueChange(formatted to timeField.text)
+                },
+                placeholder = {
+                    if (!isDateFocused && dateField.text.isEmpty()) {
+                        Text("DD-MM-YYYY", color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                },
+                interactionSource = dateInteraction,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF479195)),
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
@@ -258,11 +297,32 @@ private fun DateTimeRow(label: String, date: String, time: String, onValueChange
                 ),
                 textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center)
             )
+
             TextField(
-                value = time,
-                onValueChange = { onValueChange(date to it) },
-                placeholder = { Text("HH:MM", color = Color.White) },
-                modifier = Modifier.width(100.dp).height(50.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFF479195)),
+                value = timeField,
+                onValueChange = {
+                    val digits = it.text.filter { ch -> ch.isDigit() }.take(4)
+                    val formatted = buildString {
+                        digits.forEachIndexed { index, c ->
+                            append(c)
+                            if (index == 1) append(':')
+                        }
+                    }
+                    val newCursor = formatted.length
+                    timeField = TextFieldValue(formatted, TextRange(newCursor))
+                    onValueChange(dateField.text to formatted)
+                },
+                placeholder = {
+                    if (!isTimeFocused && timeField.text.isEmpty()) {
+                        Text("HH:MM", color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                    }
+                },
+                interactionSource = timeInteraction,
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF479195)),
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
