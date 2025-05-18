@@ -40,32 +40,6 @@ fun WarningLightPage(id: String, viewModel: WarningLightViewModel = viewModel())
                 .background(Color(0xFFF5F5F5))
                 .verticalScroll(rememberScrollState())
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Button(
-                    onClick = { /* TODO: Add calendar functionality */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF479195)),
-                    modifier = Modifier.wrapContentWidth(),
-                    shape = RectangleShape
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.calendar),
-                        contentDescription = "Add to calendar",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        "Add to calendar",
-                        color = Color.White,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
