@@ -55,6 +55,9 @@ class NotificationViewModel(
                         time = it.time.toDate()
                     )
                 }
+                Log.d("NotificationDebug", "Current userId: $userId")
+                Log.d("NotificationDebug", "My post IDs: $myPostIds")
+                Log.d("NotificationDebug", "All comments: ${comments.map { it.postId to it.username }}")
 
                 val upcomingEvents = events.filter {
                     it.notificationSet &&

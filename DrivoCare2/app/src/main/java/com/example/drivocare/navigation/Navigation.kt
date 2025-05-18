@@ -21,7 +21,7 @@ fun Navigation(
 ) {
     val navController = rememberNavController()
     val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
-    val noBottomNavRoutes = listOf("login", "register")
+    val noBottomNavRoutes = listOf("login", "register", "forgot_password")
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
@@ -31,7 +31,7 @@ fun Navigation(
         NavHost(
             navController = navController,
             startDestination = "login",
-            modifier = modifier.padding(innerPadding) // ✅ Proper usage
+            modifier = modifier.padding(innerPadding)
         ) {
             composable("login") { LoginPage(modifier, navController, authViewModel) }
             composable("register") { RegisterPage(modifier, navController, authViewModel) }
@@ -43,6 +43,7 @@ fun Navigation(
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
             composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }
             composable("mycars") { MyCarsPage(modifier, navController, authViewModel, addCarViewModel, myCarsViewModel) }
+            composable("forgot_password") { ForgotPasswordPage(modifier, navController, authViewModel) }
             composable("addevent/{carId}") {
                 val carId = it.arguments?.getString("carId")
                 AddEventPage(carId, navController, addEventViewModel, addCarViewModel)

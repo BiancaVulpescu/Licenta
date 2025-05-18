@@ -32,7 +32,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
         }
     }
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF479195)),
         contentAlignment = Alignment.Center
@@ -71,7 +71,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                 )
             )
             Spacer(modifier = Modifier.height(10.dp))
-            TextButton(onClick = { /* Forgot Password Action */ }) {
+            TextButton(onClick = { navController.navigate("forgot_password") }) {
                 Text("forgot password", color = Color.White)
             }
             Spacer(modifier = Modifier.height(60.dp))

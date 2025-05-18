@@ -1,6 +1,7 @@
 package com.example.drivocare.repositories
 
 import android.net.Uri
+import android.util.Log
 import com.example.drivocare.data.Comment
 import com.example.drivocare.data.Post
 import com.google.firebase.firestore.FirebaseFirestore
@@ -69,6 +70,11 @@ class PostRepository : IPostRepository {
     override fun getAllComments(): Flow<List<Comment>> = callbackFlow {
         val listener = firestore.collectionGroup("comments")
             .addSnapshotListener { snapshot, _ ->
+                Log.d("AllCommentsDebug", "Snapshot size: ${snapshot?.size()}")
+                snapshot?.documents?.forEach {
+                    Log.d("AllCommentsDebug", "Path: ${it.reference.path}")
+                }
+
                 val commentList = snapshot?.documents?.mapNotNull { doc ->
                     val comment = doc.toObject(Comment::class.java)
                     val postId = doc.reference.path.split("/")[1]

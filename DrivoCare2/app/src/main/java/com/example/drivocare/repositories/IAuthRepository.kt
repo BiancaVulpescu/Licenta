@@ -9,4 +9,6 @@ interface IAuthRepository {
     fun updateUsername(newUsername: String, onSuccess: () -> Unit, onError: (String) -> Unit)
     fun fetchCurrentUsername(onSuccess: (String) -> Unit, onError: (String) -> Unit)
     fun changePassword(currentPassword: String, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onError: (String) -> Unit)
+
 }

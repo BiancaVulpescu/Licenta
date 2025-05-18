@@ -55,7 +55,8 @@ class PostDetailViewModel(private val repository: IPostRepository) : ViewModel()
             userId = user.uid,
             username = username.ifBlank { "Username" },
             text = text,
-            time = Timestamp.now()
+            time = Timestamp.now(),
+            postId = postId
         )
 
         repository.addComment(postId, comment, onSuccess = {

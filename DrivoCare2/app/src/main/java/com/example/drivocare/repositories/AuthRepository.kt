@@ -87,5 +87,15 @@ class AuthRepository : IAuthRepository {
     override fun logout() {
         auth.signOut()
     }
+    override fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        if (email.isBlank()) {
+            onError("Email cannot be empty")
+            return
+        }
+
+        auth.sendPasswordResetEmail(email)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onError(e.message ?: "Failed to send reset email") }
+    }
 
 }
