@@ -20,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.drivocare.viewmodel.AddCarViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -28,7 +27,6 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.LocalDate
 import com.example.drivocare.viewmodel.MyCarsViewModel
-import com.example.drivocare.viewmodel.CalendarViewModel
 import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AuthViewModel
 
@@ -75,11 +73,10 @@ fun MyCarsPage(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().background(Color(0xFFCBD2D6))) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {

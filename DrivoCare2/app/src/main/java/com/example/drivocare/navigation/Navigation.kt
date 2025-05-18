@@ -4,18 +4,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import androidx.navigation.navArgument
 import com.example.drivocare.ui.screens.*
-import com.example.drivocare.viewmodel.AddCarViewModel
-import com.example.drivocare.viewmodel.AddEventViewModel
-import com.example.drivocare.viewmodel.AuthViewModel
-import com.example.drivocare.viewmodel.MyCarsViewModel
-import com.example.drivocare.viewmodel.NotificationViewModel
-import com.example.drivocare.viewmodel.PostDetailViewModel
-import com.example.drivocare.viewmodel.PostViewModel
+import com.example.drivocare.viewmodel.*
+
 @Composable
 fun Navigation(
     modifier: Modifier = Modifier,
@@ -36,7 +28,11 @@ fun Navigation(
         topBar = { if (currentRoute in showTopBarRoutes) TopNavBar(navController) },
         bottomBar = { if (currentRoute !in noBottomNavRoutes) BottomNavBar(navController) }
     ) { innerPadding ->
-        NavHost(navController, startDestination = "login", modifier = Modifier.padding(innerPadding)) {
+        NavHost(
+            navController = navController,
+            startDestination = "login",
+            modifier = modifier.padding(innerPadding) // ✅ Proper usage
+        ) {
             composable("login") { LoginPage(modifier, navController, authViewModel) }
             composable("register") { RegisterPage(modifier, navController, authViewModel) }
             composable("home") { HomePage(modifier, navController, authViewModel, postViewModel) }

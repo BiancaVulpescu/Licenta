@@ -45,9 +45,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             DrivoCareTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Navigation(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier,
                         authViewModel = authViewModel,
                         addCarViewModel = addCarViewModel,
                         myCarsViewModel = myCarsViewModel,
@@ -56,7 +55,6 @@ class MainActivity : ComponentActivity() {
                         addEventViewModel = addEventViewModel,
                         notificationViewModel= notificationViewModel
                     )
-                }
             }
         }
     }

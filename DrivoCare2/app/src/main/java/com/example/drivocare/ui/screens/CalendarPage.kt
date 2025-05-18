@@ -1,4 +1,4 @@
-package com.example.drivocare.viewmodel
+package com.example.drivocare.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
