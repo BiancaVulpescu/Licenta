@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -70,18 +71,11 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.LightGray)
-                                    ) {
                                         Icon(
-                                            imageVector = Icons.Default.Person,
+                                            painter = painterResource(id = com.example.drivocare.R.drawable.profile),
                                             contentDescription = "Profile",
-                                            modifier = Modifier.align(Alignment.Center)
+                                            modifier = Modifier.size(30.dp)
                                         )
-                                    }
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(currentPost.username, fontWeight = FontWeight.Bold)
                                 }
@@ -127,13 +121,13 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextField(
                     value = commentText,
                     onValueChange = { viewModel.setCommentText(it) },
-                    placeholder = { Text("ceva de add comment") },
+                    placeholder = { Text("add comment") },
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp),
@@ -150,9 +144,8 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                     onClick = {
                         viewModel.addComment(postId, username)
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2A9D8F)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A9D8F)),
+                    shape = RoundedCornerShape(0.dp),
                 ) {
                     Text("Post")
                 }
@@ -170,31 +163,22 @@ fun CommentItem(comment: Comment) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(0.dp),
     ) {
         Column(Modifier.padding(12.dp)) {
-            // User info and date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                    ) {
                         Icon(
-                            imageVector = Icons.Default.Person,
+                            painter = painterResource(id = com.example.drivocare.R.drawable.profile),
                             contentDescription = "Profile",
-                            modifier = Modifier.align(Alignment.Center),
-                            tint = Color.DarkGray
+                            modifier = Modifier.size(30.dp)
                         )
-                    }
+
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(comment.username, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
@@ -205,7 +189,7 @@ fun CommentItem(comment: Comment) {
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
-                    
+
                 }
             }
 

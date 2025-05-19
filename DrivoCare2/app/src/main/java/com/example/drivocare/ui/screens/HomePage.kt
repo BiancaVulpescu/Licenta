@@ -67,7 +67,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
     val filteredPosts by viewModel.filteredPosts.collectAsState()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFCBD2D6))
     ) {
