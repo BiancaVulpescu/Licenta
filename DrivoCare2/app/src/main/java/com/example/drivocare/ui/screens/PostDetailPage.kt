@@ -13,6 +13,7 @@ import com.example.drivocare.data.Comment
 import com.example.drivocare.viewmodel.PostDetailViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
@@ -44,7 +45,8 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
     }
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
+            .background(Color(0xFFCBD2D6))
     ) {
         LazyColumn(
             modifier = Modifier
@@ -58,9 +60,8 @@ fun PostDetailPage(modifier: Modifier = Modifier, postId: String, navController:
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White
-                        )
+                        shape = RoundedCornerShape(0.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(Modifier.padding(16.dp)) {
                             Row(
@@ -204,17 +205,7 @@ fun CommentItem(comment: Comment) {
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
-
-                    IconButton(
-                        onClick = { /* Handle more options */ },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More",
-                            tint = Color.Gray
-                        )
-                    }
+                    
                 }
             }
 

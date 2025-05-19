@@ -48,6 +48,9 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.SolidColor
 
 @Composable
 fun HomePage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, viewModel: PostViewModel)
@@ -64,26 +67,40 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
     val filteredPosts by viewModel.filteredPosts.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFCBD2D6))
     ) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { viewModel.setSearchQuery(it) },
-            placeholder = { Text("Search for answers or questions") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            placeholder = { Text("Search for posts", color = Color.Gray) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = Color.Gray
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            shape = MaterialTheme.shapes.small,
+                .padding(horizontal = 20.dp)
+                .padding(top=20.dp, bottom = 10.dp)
+                .height(55.dp),
+            shape = RoundedCornerShape(0.dp),
             colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = Color.LightGray
-            )
+                unfocusedContainerColor = Color.White,
+                focusedContainerColor = Color.White,
+                unfocusedIndicatorColor = Color(0xFFB0B0B0),
+                focusedIndicatorColor = Color(0xFFB0B0B0)
+            ),
+            singleLine = true
         )
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .weight(1f)
         ) {
             items(filteredPosts, key = { it.id }) { post ->
@@ -104,44 +121,39 @@ fun PostItem(post: Post, navController: NavController, viewModel: PostViewModel)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 10.dp)
             .clickable { navController.navigate("postDetail/${post.id}") },
+        shape = RoundedCornerShape(0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color(0xFFF5F5F5)
         )
     ) {
-        Column(Modifier.padding(12.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
+                    Icon(
+                            painter = painterResource(id = com.example.drivocare.R.drawable.profile),
                             contentDescription = "Profile",
-                            modifier = Modifier.align(Alignment.Center)
+                            modifier = Modifier.size(30.dp)
                         )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(post.username, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(post.username)
                 }
-
                 Text(
                     formatDate(post.time.toDate()),
-                    color = Color.Gray,
+                    color = Color.Black,
                     fontSize = 12.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            post.contentText?.let { Text(it) }
+            if (!post.contentText.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(post.contentText!!)
+            }
             post.imageUrl?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 AsyncImage(
@@ -157,14 +169,15 @@ fun PostItem(post: Post, navController: NavController, viewModel: PostViewModel)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    painter = painterResource(id = android.R.drawable.ic_menu_edit),
+                    painter = painterResource(id = com.example.drivocare.R.drawable.comm),
                     contentDescription = "Comments",
-                    tint = Color(0xFFE63946)
+                    tint = Color(0xFF9C141E),
+                    modifier = Modifier.size(30.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     "$commentCount comments",
-                    color = Color(0xFFE63946),
+                    color = Color(0xFF9C141E),
                     fontWeight = FontWeight.Bold
                 )
             }

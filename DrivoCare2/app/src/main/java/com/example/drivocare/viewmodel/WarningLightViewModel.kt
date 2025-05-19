@@ -3,7 +3,6 @@ package com.example.drivocare.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.drivocare.data.WarningLight
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow

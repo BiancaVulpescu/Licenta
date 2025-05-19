@@ -23,9 +23,11 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 @Composable
-fun CalendarViewModel(
+fun CalendarPage(
     month: YearMonth,
     eventDates: List<LocalDate>,
+    warningLightTitles: List<String>,
+    eventTitleMap: Map<LocalDate, String>,
     onMonthChange: (String) -> Unit,
     onDateSelected: (LocalDate) -> Unit,
     selectedDate: LocalDate
@@ -64,7 +66,9 @@ fun CalendarViewModel(
                         Box(modifier = Modifier.weight(1f).height(40.dp)) {}
                     } else {
                         val date = month.atDay(day)
-                        val isEvent = eventDates.contains(date)
+                        val title = eventTitleMap[date]
+                        val isEvent = title != null
+                        val isWarningLight = warningLightTitles.contains(title)
                         val isSelected = date == selectedDate
 
                         Box(
@@ -74,7 +78,8 @@ fun CalendarViewModel(
                                 .background(
                                     color= when {
                                         isSelected -> Color(0xFFB0BEC5)
-                                        isEvent ->  Color(0xFFCF6679)
+                                        isEvent && isWarningLight -> Color(0xFF479195)
+                                        isEvent ->  Color(0xFF9C141E)
                                         else -> Color.Transparent
                                     },
                                     shape = CircleShape

@@ -263,15 +263,18 @@ private fun DateTimeRow(
             TextField(
                 value = dateField,
                 onValueChange = {
+                    val isDeleting = it.text.length < dateField.text.length
                     val digits = it.text.filter { ch -> ch.isDigit() }.take(8)
+
                     val formatted = buildString {
                         digits.forEachIndexed { index, c ->
                             append(c)
                             if (index == 1 || index == 3) append('-')
                         }
                     }
-                    val newCursor = formatted.length
-                    dateField = TextFieldValue(formatted, TextRange(newCursor))
+
+                    val cursor = if (isDeleting) it.selection.start else formatted.length
+                    dateField = TextFieldValue(formatted, TextRange(cursor))
                     onValueChange(formatted to timeField.text)
                 },
                 placeholder = {
@@ -301,6 +304,7 @@ private fun DateTimeRow(
             TextField(
                 value = timeField,
                 onValueChange = {
+                    val isDeleting = it.text.length < timeField.text.length
                     val digits = it.text.filter { ch -> ch.isDigit() }.take(4)
                     val formatted = buildString {
                         digits.forEachIndexed { index, c ->
@@ -308,8 +312,8 @@ private fun DateTimeRow(
                             if (index == 1) append(':')
                         }
                     }
-                    val newCursor = formatted.length
-                    timeField = TextFieldValue(formatted, TextRange(newCursor))
+                    val cursor = if (isDeleting) it.selection.start else formatted.length
+                    timeField = TextFieldValue(formatted, TextRange(cursor))
                     onValueChange(dateField.text to formatted)
                 },
                 placeholder = {

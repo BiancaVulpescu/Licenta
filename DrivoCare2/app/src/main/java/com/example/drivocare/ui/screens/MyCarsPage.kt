@@ -48,7 +48,14 @@ fun MyCarsPage(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val isLoading by viewModel.isLoading.collectAsState()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
+    val warningLights = listOf(
+        "abs", "air_suspension", "airbag_indicator", "battery", "brake",
+        "catalytic_converter", "check_engine", "engine_temperature",
+        "fuel_filter", "glow_plug", "high_beam_light", "hood_open",
+        "low_fuel", "master_warning", "oil_pressure", "parking_brake",
+        "powertrain", "seat_belt", "tire_pressure", "traction_control",
+        "traction_control_off", "transmission_temperature"
+    )
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 300)
@@ -208,11 +215,16 @@ fun MyCarsPage(
                 }
             }
 
-            CalendarViewModel(
+            CalendarPage(
                 month = currentMonth,
                 eventDates = events.map {
                     it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 },
+                warningLightTitles = warningLights,
+                eventTitleMap = events.associateBy(
+                    { it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() },
+                    { it.title }
+                ),
                 onMonthChange = { direction ->
                     currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
                 },

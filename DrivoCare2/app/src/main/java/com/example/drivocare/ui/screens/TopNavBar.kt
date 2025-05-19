@@ -76,7 +76,7 @@ fun TopNavBar(navController: NavController) {
                     Text(
                         text = item.label,
                         color = if (currentRoute == item.route) Color(0xFF9C141E) else Color.White,
-                        fontSize = 18.sp,
+                        //fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
