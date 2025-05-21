@@ -7,6 +7,6 @@ data class Comment(
     val username: String = "",
     val text: String = "",
     val time: Timestamp = Timestamp.now(),
-    val parentCommentId: String? = null,
-    val postId: String = ""
+    val postId: String = "",
+    val imageUrl: String? = null
 )

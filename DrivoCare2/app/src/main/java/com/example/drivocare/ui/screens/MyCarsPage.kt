@@ -273,7 +273,7 @@ fun MyCarsPage(
                             .clickable {
                                 val selectedCarId = cars.getOrNull(selectedCarIndex)?.id
                                 navController.navigate("addevent/$selectedCarId")
-                            },
+                            },d
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(

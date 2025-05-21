@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,7 +43,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Numele aplicatiei",
+                text = "DrivoCare",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -65,6 +65,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                 onValueChange = { password = it },
                 label = { Text("Password", color=Color(0xFF50696A)) },
                 modifier = Modifier.fillMaxWidth(0.8f),
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White

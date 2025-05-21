@@ -10,7 +10,7 @@ interface IPostRepository {
     fun addPost(post: Post, onSuccess: () -> Unit, onFailure: (String) -> Unit)
     fun getPosts(): Flow<List<Post>>
     fun observeCommentCount(postId: String): Flow<Int>
-    fun addComment(postId: String, comment: Comment, onSuccess: () -> Unit, onFailure: (String) -> Unit)
+    suspend fun addCommentWithImage(postId: String, comment: Comment, imageUri: Uri?, onSuccess: () -> Unit, onFailure: (String) -> Unit)
     fun getComments(postId: String): Flow<List<Comment>>
     fun getAllComments(): Flow<List<Comment>>
 }

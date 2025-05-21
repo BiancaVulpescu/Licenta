@@ -57,8 +57,7 @@ class NotificationViewModel(
 
                 val upcomingEvents = events.filter {
                      it.notificationSet &&
-                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) &&
-                     it.endDate.toDate() != it.startDate.toDate()
+                            it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
                 }
 
                 val carEventNotifs = upcomingEvents.map {
