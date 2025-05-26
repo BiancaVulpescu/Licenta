@@ -287,7 +287,7 @@ private fun DateTimeRow(
                 },
                 placeholder = {
                     if (!isDateFocused && dateField.text.isEmpty()) {
-                        Text("DD-MM-YYYY", color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text("DD-MM-YYYY", color = Color.White, fontSize = 12.sp, letterSpacing = 0.5.sp, maxLines = 1, softWrap = false, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 },
                 interactionSource = dateInteraction,
