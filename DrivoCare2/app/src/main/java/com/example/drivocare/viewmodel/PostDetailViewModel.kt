@@ -1,5 +1,6 @@
 package com.example.drivocare.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,7 +26,12 @@ class PostDetailViewModel(private val repository: IPostRepository) : ViewModel()
 
     private val _commentText = MutableStateFlow("")
     val commentText: StateFlow<String> = _commentText
+    private val _selectedCommentImageUri = MutableStateFlow<Uri?>(null)
+    val selectedCommentImageUri: StateFlow<Uri?> = _selectedCommentImageUri
 
+    fun setSelectedCommentImageUri(uri: Uri?) {
+        _selectedCommentImageUri.value = uri
+    }
     fun loadPost(postId: String) {
         viewModelScope.launch {
             repository.getPosts().collectLatest { posts ->
@@ -55,11 +61,21 @@ class PostDetailViewModel(private val repository: IPostRepository) : ViewModel()
             userId = user.uid,
             username = username.ifBlank { "Username" },
             text = text,
-            time = Timestamp.now()
+            time = Timestamp.now(),
+            postId = postId
         )
 
-        repository.addComment(postId, comment, onSuccess = {
-            _commentText.value = ""
-        }, onFailure = {})
+        viewModelScope.launch {
+            (repository as? PostRepository)?.addCommentWithImage(
+                postId = postId,
+                comment = comment,
+                imageUri = _selectedCommentImageUri.value,
+                onSuccess = {
+                    _commentText.value = ""
+                    _selectedCommentImageUri.value = null
+                },
+                onFailure = { e -> println("Failed to add comment: $e") }
+            )
+        }
     }
 }

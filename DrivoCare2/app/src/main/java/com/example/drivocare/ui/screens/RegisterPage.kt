@@ -19,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,7 +54,7 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
         }
     }
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF479195)),
         contentAlignment = Alignment.Center
@@ -65,7 +65,7 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Numele aplicatiei",
+                text = "DrivoCare",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -101,6 +101,7 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
                 onValueChange = { password = it },
                 label = { Text("Password", color = Color(0xFF50696A)) },
                 modifier = Modifier.fillMaxWidth(0.8f),
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
@@ -113,6 +114,7 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password", color = Color(0xFF50696A)) },
                 modifier = Modifier.fillMaxWidth(0.8f),
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White
@@ -125,7 +127,7 @@ fun RegisterPage(modifier: Modifier=Modifier, navController: NavController, auth
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            TextButton(onClick = { /* Forgot Password Action */ }) {
+            TextButton(onClick = { navController.navigate("forgot_password")}) {
                 Text("forgot password", color = Color.White)
             }
             Spacer(modifier = Modifier.height(40.dp))

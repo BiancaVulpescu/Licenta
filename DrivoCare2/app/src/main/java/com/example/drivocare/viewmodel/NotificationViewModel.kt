@@ -2,7 +2,6 @@ package com.example.drivocare.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.drivocare.data.Comment
@@ -57,11 +56,10 @@ class NotificationViewModel(
                 }
 
                 val upcomingEvents = events.filter {
-                    it.notificationSet &&
+                     it.notificationSet &&
                             it.endDate.toDate().before(Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000))
                 }
 
-                Log.d("InboxDebug", "Filtered to ${upcomingEvents.size} upcoming events")
                 val carEventNotifs = upcomingEvents.map {
                     markEventAsShownToday(it.id)
                     CarEventNotification(

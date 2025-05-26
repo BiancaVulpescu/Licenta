@@ -1,10 +1,11 @@
 package com.example.drivocare.ui.screens
 
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,26 +33,28 @@ fun InboxPage(
     LaunchedEffect(Unit) {
         viewModel.loadNotifications()
     }
+
     val notifications by viewModel.notifications.collectAsState()
 
-    Log.d("InboxDebug", "Fetched ${notifications} ")
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color(0xFFCBD2D6))
+            .padding(top=16.dp)
     ) {
-        Text("Notifications", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(12.dp))
-
         if (notifications.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text("You're all caught up!", fontSize = 16.sp)
+                Text("Your inbox is empty", fontSize = 16.sp)
             }
         } else {
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            ) {
                 items(notifications, key = { it.id }) { notif ->
                     NotificationCard(notif, navController, myCarsViewModel)
                 }
@@ -67,7 +70,7 @@ fun NotificationCard(item: NotificationItem, navController: NavController, viewM
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(vertical = 10.dp)
             .clickable {
                 when (item) {
                     is NotificationItem.CommentNotification -> {
@@ -83,7 +86,8 @@ fun NotificationCard(item: NotificationItem, navController: NavController, viewM
                     }
                 }
             },
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(0.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             when (item) {

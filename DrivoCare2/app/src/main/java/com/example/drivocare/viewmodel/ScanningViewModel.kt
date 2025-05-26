@@ -19,15 +19,10 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import org.tensorflow.lite.DataType
-import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
-import java.nio.channels.FileChannel
 import com.example.drivocare.ml.WarningLightModelBun
-import com.google.firebase.auth.FirebaseAuth
 
 
 class ScanningViewModel : ViewModel() {
@@ -83,7 +78,6 @@ class ScanningViewModel : ViewModel() {
                     val byteBuffer = convertBitmapToByteBuffer(resized)
 
                     try {
-                        // Load and run the model
                         val model = WarningLightModelBun.newInstance(context)
 
                         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.FLOAT32)
@@ -108,7 +102,7 @@ class ScanningViewModel : ViewModel() {
                         val result = if (confidenceScore >= 70.0) {
                             labels.getOrNull(maxIdx) ?: "Unknown"
                         } else {
-                            "Scan again the image isn't recognized"
+                            "Try to scan again"
                         }
 
                         model.close()

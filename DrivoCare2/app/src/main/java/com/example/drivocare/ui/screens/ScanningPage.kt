@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,7 +58,7 @@ fun ScanningPage(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         if (permissionState.value) {
             AndroidView(
                 factory = { previewView },
@@ -67,11 +66,11 @@ fun ScanningPage(
             )
             prediction?.let {
                 Text(
-                    text = "Detected: $it",
+                    text = "$it",
                     color = Color.White,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(bottom = 100.dp)
+                        .padding(bottom = 130.dp)
                 )
             }
             Row(
@@ -83,7 +82,7 @@ fun ScanningPage(
                 CaptureButton(
                     text = "Scan",
                     onClick = { scanningViewModel.capturePhoto(context) { result ->
-                        if (result != "Model Error" && result != "Scan again the image isn't recognized") {
+                        if (result != "Model Error" && result != "Try to scan again") {
                             navController.navigate("warning/$result")
                         } else {
                             prediction = result

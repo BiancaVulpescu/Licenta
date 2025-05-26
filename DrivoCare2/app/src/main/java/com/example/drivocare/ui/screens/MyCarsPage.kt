@@ -20,7 +20,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.drivocare.viewmodel.AddCarViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -28,7 +27,6 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.LocalDate
 import com.example.drivocare.viewmodel.MyCarsViewModel
-import com.example.drivocare.viewmodel.CalendarViewModel
 import com.example.drivocare.data.AuthState
 import com.example.drivocare.viewmodel.AuthViewModel
 
@@ -50,12 +48,19 @@ fun MyCarsPage(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val isLoading by viewModel.isLoading.collectAsState()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-
+    val warningLights = listOf(
+        "abs", "air_suspension", "airbag_indicator", "battery", "brake",
+        "catalytic_converter", "check_engine", "engine_temperature",
+        "fuel_filter", "glow_plug", "high_beam_light", "hood_open",
+        "low_fuel", "master_warning", "oil_pressure", "parking_brake",
+        "powertrain", "seat_belt", "tire_pressure", "traction_control",
+        "traction_control_off", "transmission_temperature"
+    )
     val arrowRotationDegree by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 300)
     )
-
+    val dateStr = selectedDate.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"))
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -75,11 +80,10 @@ fun MyCarsPage(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize().background(Color(0xFFCBD2D6))) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
@@ -211,11 +215,16 @@ fun MyCarsPage(
                 }
             }
 
-            CalendarViewModel(
+            CalendarPage(
                 month = currentMonth,
                 eventDates = events.map {
                     it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
                 },
+                warningLightTitles = warningLights,
+                eventTitleMap = events.associateBy(
+                    { it.endDate.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate() },
+                    { it.title }
+                ),
                 onMonthChange = { direction ->
                     currentMonth = if (direction == "next") currentMonth.plusMonths(1) else currentMonth.minusMonths(1)
                 },
@@ -263,7 +272,7 @@ fun MyCarsPage(
                             .padding(vertical = 4.dp)
                             .clickable {
                                 val selectedCarId = cars.getOrNull(selectedCarIndex)?.id
-                                navController.navigate("addevent/$selectedCarId")
+                                navController.navigate("addevent/$selectedCarId/$dateStr")
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {

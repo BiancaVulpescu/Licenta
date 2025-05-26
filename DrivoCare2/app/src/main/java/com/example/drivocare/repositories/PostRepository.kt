@@ -1,6 +1,7 @@
 package com.example.drivocare.repositories
 
 import android.net.Uri
+import android.util.Log
 import com.example.drivocare.data.Comment
 import com.example.drivocare.data.Post
 import com.google.firebase.firestore.FirebaseFirestore
@@ -46,14 +47,38 @@ class PostRepository : IPostRepository {
         awaitClose { listener.remove() }
     }
 
-    override fun addComment(postId: String, comment: Comment, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        firestore.collection("posts")
-            .document(postId)
-            .collection("comments")
-            .add(comment)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { e -> onFailure(e.message ?: "Failed to add comment") }
+    override suspend fun addCommentWithImage(
+        postId: String,
+        comment: Comment,
+        imageUri: Uri?,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        try {
+            val updatedComment = if (imageUri != null) {
+                val imageUrl = uploadImage(imageUri)
+                if (imageUrl != null) {
+                    comment.copy(imageUrl = imageUrl)
+                } else {
+                    onFailure("Failed to upload image.")
+                    return
+                }
+            } else {
+                comment
+            }
+
+            firestore.collection("posts")
+                .document(postId)
+                .collection("comments")
+                .add(updatedComment)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { e -> onFailure(e.message ?: "Failed to add comment") }
+
+        } catch (e: Exception) {
+            onFailure(e.message ?: "Unexpected error occurred")
+        }
     }
+
 
     override fun getComments(postId: String): Flow<List<Comment>> = callbackFlow {
         val listener = firestore.collection("posts")
@@ -69,6 +94,11 @@ class PostRepository : IPostRepository {
     override fun getAllComments(): Flow<List<Comment>> = callbackFlow {
         val listener = firestore.collectionGroup("comments")
             .addSnapshotListener { snapshot, _ ->
+                Log.d("AllCommentsDebug", "Snapshot size: ${snapshot?.size()}")
+                snapshot?.documents?.forEach {
+                    Log.d("AllCommentsDebug", "Path: ${it.reference.path}")
+                }
+
                 val commentList = snapshot?.documents?.mapNotNull { doc ->
                     val comment = doc.toObject(Comment::class.java)
                     val postId = doc.reference.path.split("/")[1]

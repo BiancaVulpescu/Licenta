@@ -4,18 +4,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import androidx.navigation.navArgument
 import com.example.drivocare.ui.screens.*
-import com.example.drivocare.viewmodel.AddCarViewModel
-import com.example.drivocare.viewmodel.AddEventViewModel
-import com.example.drivocare.viewmodel.AuthViewModel
-import com.example.drivocare.viewmodel.MyCarsViewModel
-import com.example.drivocare.viewmodel.NotificationViewModel
-import com.example.drivocare.viewmodel.PostDetailViewModel
-import com.example.drivocare.viewmodel.PostViewModel
+import com.example.drivocare.viewmodel.*
+
 @Composable
 fun Navigation(
     modifier: Modifier = Modifier,
@@ -29,14 +21,18 @@ fun Navigation(
 ) {
     val navController = rememberNavController()
     val showTopBarRoutes = listOf("home", "myposts", "inbox", "newpost")
-    val noBottomNavRoutes = listOf("login", "register")
+    val noBottomNavRoutes = listOf("login", "register", "forgot_password")
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         topBar = { if (currentRoute in showTopBarRoutes) TopNavBar(navController) },
         bottomBar = { if (currentRoute !in noBottomNavRoutes) BottomNavBar(navController) }
     ) { innerPadding ->
-        NavHost(navController, startDestination = "login", modifier = Modifier.padding(innerPadding)) {
+        NavHost(
+            navController = navController,
+            startDestination = "login",
+            modifier = modifier.padding(innerPadding)
+        ) {
             composable("login") { LoginPage(modifier, navController, authViewModel) }
             composable("register") { RegisterPage(modifier, navController, authViewModel) }
             composable("home") { HomePage(modifier, navController, authViewModel, postViewModel) }
@@ -47,12 +43,16 @@ fun Navigation(
             composable("scanning") { ScanningPage(modifier, navController, authViewModel) }
             composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }
             composable("mycars") { MyCarsPage(modifier, navController, authViewModel, addCarViewModel, myCarsViewModel) }
-            composable("addevent/{carId}") {
-                val carId = it.arguments?.getString("carId")
-                AddEventPage(carId, navController, addEventViewModel, addCarViewModel)
+            composable("forgot_password") { ForgotPasswordPage(modifier, navController, authViewModel) }
+            composable("addevent/{carId}/{date}") { backStackEntry ->
+                val carId = backStackEntry.arguments?.getString("carId")
+                val selectedDateArg = backStackEntry.arguments?.getString("date")
+                AddEventPage(carId = carId, selectedDateArg = selectedDateArg, navController = navController, eventViewModel = addEventViewModel, carViewModel = addCarViewModel)
             }
+
+
             composable("addevent") {
-                AddEventPage(null, navController, addEventViewModel, addCarViewModel)
+                AddEventPage(null, selectedDateArg = null, navController, addEventViewModel, addCarViewModel)
             }
             composable("postDetail/{postId}") {
                 val postId = it.arguments?.getString("postId") ?: ""

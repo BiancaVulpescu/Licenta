@@ -46,11 +46,11 @@ fun AddCarPage(
     val isEditMode by addCarViewModel.isEditMode.collectAsState()
     val pendingEvents = addCarViewModel.pendingEvents
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()
+        .background(Color(0xFFCBD2D6))) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
                 .verticalScroll(scrollState)
                 .padding(20.dp)
         ) {

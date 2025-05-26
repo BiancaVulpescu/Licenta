@@ -75,6 +75,8 @@ class AuthViewModel (
     fun changePassword(currentPassword: String, newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         repository.changePassword(currentPassword, newPassword, onSuccess, onError)
     }
-
+    fun sendPasswordResetEmail(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        repository.sendPasswordResetEmail(email, onSuccess, onError)
+    }
 }
 

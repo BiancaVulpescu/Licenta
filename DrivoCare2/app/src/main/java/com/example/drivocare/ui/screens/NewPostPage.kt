@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.drivocare.R
 import com.example.drivocare.viewmodel.AuthViewModel
 import com.example.drivocare.viewmodel.PostViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -69,7 +70,7 @@ fun NewPostPage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .background(Color.White, RoundedCornerShape(4.dp)),
+                        .background(Color.White, RoundedCornerShape(0.dp)),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
@@ -81,7 +82,7 @@ fun NewPostPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 selectedImageUri?.let { uri ->
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         AsyncImage(
                             model = uri,
                             contentDescription = null,
@@ -93,7 +94,7 @@ fun NewPostPage(
                         Button(
                             onClick = { viewModel.setSelectedImageUri(null) },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                            modifier = Modifier.align(Alignment.End)
+                            shape = RoundedCornerShape(0.dp)
                         ) {
                             Text("Remove Image", color = Color.White)
                         }
@@ -108,12 +109,14 @@ fun NewPostPage(
                     Button(
                         onClick = { launcher.launch("image/*") },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A9D8F)),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(0.dp),
+                        contentPadding = PaddingValues(start = 10.dp, end = 10.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = android.R.drawable.ic_menu_gallery),
+                            painter = painterResource(id = R.drawable.image),
                             contentDescription = "Add Image",
-                            tint = Color.White
+                            tint = Color.White,
+                            modifier = Modifier.size(54.dp)
                         )
                     }
 
@@ -124,14 +127,15 @@ fun NewPostPage(
                             }
                         },
                         enabled = postText.isNotBlank() || selectedImageUri != null,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946)),
-                        shape = RoundedCornerShape(4.dp)
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2A9D8F)),
+                        shape = RoundedCornerShape(0.dp),
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp)
                     ) {
                         Text(
                             "Post",
-                            color = Color.White,
+                            color = Color(0xFF9C141E),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 28.sp
                         )
                     }
                 }
