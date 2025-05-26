@@ -28,16 +28,18 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.drivocare.viewmodel.AddCarViewModel
 import com.example.drivocare.viewmodel.AddEventViewModel
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.take
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEventPage(
     carId: String?,
+    selectedDateArg: String?,
     navController: NavController,
     eventViewModel: AddEventViewModel,
     carViewModel: AddCarViewModel
@@ -56,9 +58,15 @@ fun AddEventPage(
     var expanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var selectedWarningLight by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
-            eventViewModel.reset()
+    LaunchedEffect(carId, selectedDateArg) {
+        eventViewModel.reset()
+
+        // Set the start date if provided from calendar selection
+        if (!selectedDateArg.isNullOrBlank()) {
+            eventViewModel.startDate.value = selectedDateArg
+        }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -246,8 +254,8 @@ private fun DateTimeRow(
     viewModel: AddEventViewModel,
     onValueChange: (Pair<String, String>) -> Unit
 ) {
-    var dateField by remember { mutableStateOf(TextFieldValue(date)) }
-    var timeField by remember { mutableStateOf(TextFieldValue(time)) }
+    var dateField by remember(date) { mutableStateOf(TextFieldValue(date)) }
+    var timeField by remember(time) { mutableStateOf(TextFieldValue(time)) }
 
     val dateInteraction = remember { MutableInteractionSource() }
     val timeInteraction = remember { MutableInteractionSource() }

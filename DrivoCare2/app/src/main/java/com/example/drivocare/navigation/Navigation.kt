@@ -44,12 +44,15 @@ fun Navigation(
             composable("addcar") { AddCarPage(modifier, navController, authViewModel, addCarViewModel) }
             composable("mycars") { MyCarsPage(modifier, navController, authViewModel, addCarViewModel, myCarsViewModel) }
             composable("forgot_password") { ForgotPasswordPage(modifier, navController, authViewModel) }
-            composable("addevent/{carId}") {
-                val carId = it.arguments?.getString("carId")
-                AddEventPage(carId, navController, addEventViewModel, addCarViewModel)
+            composable("addevent/{carId}/{date}") { backStackEntry ->
+                val carId = backStackEntry.arguments?.getString("carId")
+                val selectedDateArg = backStackEntry.arguments?.getString("date")
+                AddEventPage(carId = carId, selectedDateArg = selectedDateArg, navController = navController, eventViewModel = addEventViewModel, carViewModel = addCarViewModel)
             }
+
+
             composable("addevent") {
-                AddEventPage(null, navController, addEventViewModel, addCarViewModel)
+                AddEventPage(null, selectedDateArg = null, navController, addEventViewModel, addCarViewModel)
             }
             composable("postDetail/{postId}") {
                 val postId = it.arguments?.getString("postId") ?: ""

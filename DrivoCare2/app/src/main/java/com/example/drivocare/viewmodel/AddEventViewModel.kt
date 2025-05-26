@@ -21,7 +21,7 @@ class AddEventViewModel(private val addEventUseCase: AddEventUseCase) : ViewMode
     fun reset() {
         title.value = ""
         description.value = ""
-        startDate.value = ""
+        startDate.value =  ""
         startTime.value = ""
         endDate.value = ""
         endTime.value = ""

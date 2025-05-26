@@ -60,7 +60,7 @@ fun MyCarsPage(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 300)
     )
-
+    val dateStr = selectedDate.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"))
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -272,7 +272,7 @@ fun MyCarsPage(
                             .padding(vertical = 4.dp)
                             .clickable {
                                 val selectedCarId = cars.getOrNull(selectedCarIndex)?.id
-                                navController.navigate("addevent/$selectedCarId")
+                                navController.navigate("addevent/$selectedCarId/$dateStr")
                             },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
