@@ -49,8 +49,6 @@ fun Navigation(
                 val selectedDateArg = backStackEntry.arguments?.getString("date")
                 AddEventPage(carId = carId, selectedDateArg = selectedDateArg, navController = navController, eventViewModel = addEventViewModel, carViewModel = addCarViewModel)
             }
-
-
             composable("addevent") {
                 AddEventPage(null, selectedDateArg = null, navController, addEventViewModel, addCarViewModel)
             }

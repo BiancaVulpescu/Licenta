@@ -41,11 +41,11 @@ fun CalendarPage(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(onClick = { onMonthChange("prev") }) {
-                Text("<", fontSize = 25.sp)
+                Text("<", fontSize = 25.sp, color = Color(0xFF479195))
             }
             Text("${month.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${month.year}", fontSize = 28.sp)
             TextButton(onClick = { onMonthChange("next") }) {
-                Text(">", fontSize = 25.sp)
+                Text(">", fontSize = 25.sp, color = Color(0xFF479195))
             }
         }
 
