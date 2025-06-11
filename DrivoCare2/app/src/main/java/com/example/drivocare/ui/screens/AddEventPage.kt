@@ -61,7 +61,6 @@ fun AddEventPage(
     LaunchedEffect(carId, selectedDateArg) {
         eventViewModel.reset()
 
-        // Set the start date if provided from calendar selection
         if (!selectedDateArg.isNullOrBlank()) {
             eventViewModel.startDate.value = selectedDateArg
         }
