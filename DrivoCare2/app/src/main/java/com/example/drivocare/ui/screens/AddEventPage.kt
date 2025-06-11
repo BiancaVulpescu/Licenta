@@ -254,12 +254,21 @@ private fun DateTimeRow(
     viewModel: AddEventViewModel,
     onValueChange: (Pair<String, String>) -> Unit
 ) {
-    var dateField by remember(date) { mutableStateOf(TextFieldValue(date)) }
-    var timeField by remember(time) { mutableStateOf(TextFieldValue(time)) }
-
     val dateInteraction = remember { MutableInteractionSource() }
     val timeInteraction = remember { MutableInteractionSource() }
 
+    var dateField by remember { mutableStateOf(TextFieldValue(date)) }
+    LaunchedEffect(date) {
+        if (dateField.text.isEmpty() && date.isNotBlank()) {
+            dateField = TextFieldValue(date, TextRange(date.length))
+        }
+    }
+    var timeField by remember { mutableStateOf(TextFieldValue(time)) }
+    LaunchedEffect(time) {
+        if (timeField.text.isEmpty() && time.isNotBlank()) {
+            timeField = TextFieldValue(time, TextRange(time.length))
+        }
+    }
     val isDateFocused by dateInteraction.collectIsFocusedAsState()
     val isTimeFocused by timeInteraction.collectIsFocusedAsState()
 
@@ -267,12 +276,11 @@ private fun DateTimeRow(
         Text(label, color = Color(0xFF479195), fontWeight = FontWeight.Bold, modifier = Modifier.width(80.dp))
         Spacer(Modifier.width(16.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-
             TextField(
                 value = dateField,
-                onValueChange = {
-                    val isDeleting = it.text.length < dateField.text.length
-                    val digits = it.text.filter { ch -> ch.isDigit() }.take(8)
+                onValueChange = { newValue ->
+                    val isDeleting = newValue.text.length < dateField.text.length
+                    val digits = newValue.text.filter { it.isDigit() }.take(8)
 
                     val formatted = buildString {
                         digits.forEachIndexed { index, c ->
@@ -281,12 +289,18 @@ private fun DateTimeRow(
                         }
                     }
 
-                    val cursor = if (isDeleting) it.selection.start else formatted.length
-                    dateField = TextFieldValue(formatted, TextRange(cursor))
+                    val newCursor = when (digits.length) {
+                        in 0..1 -> digits.length
+                        in 2..3 -> digits.length + 1
+                        in 4..8 -> digits.length + 2
+                        else -> formatted.length
+                    }
+
+                    dateField = TextFieldValue(formatted, TextRange(newCursor))
                     onValueChange(formatted to timeField.text)
                 },
                 placeholder = {
-                    if (!isDateFocused && dateField.text.isEmpty()) {
+                    if (!isDateFocused && date.isEmpty()) {
                         Text("DD-MM-YYYY", color = Color.White, fontSize = 12.sp, letterSpacing = 0.5.sp, maxLines = 1, softWrap = false, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 },
@@ -311,21 +325,28 @@ private fun DateTimeRow(
 
             TextField(
                 value = timeField,
-                onValueChange = {
-                    val isDeleting = it.text.length < timeField.text.length
-                    val digits = it.text.filter { ch -> ch.isDigit() }.take(4)
+                onValueChange = { newValue ->
+                    val isDeleting = newValue.text.length < timeField.text.length
+                    val digits = newValue.text.filter { it.isDigit() }.take(4)
+
                     val formatted = buildString {
                         digits.forEachIndexed { index, c ->
                             append(c)
                             if (index == 1) append(':')
                         }
                     }
-                    val cursor = if (isDeleting) it.selection.start else formatted.length
-                    timeField = TextFieldValue(formatted, TextRange(cursor))
+
+                    val newCursor = when (digits.length) {
+                        in 0..1 -> digits.length
+                        in 2..4 -> digits.length + 1
+                        else -> formatted.length
+                    }
+
+                    timeField = TextFieldValue(formatted, TextRange(newCursor))
                     onValueChange(dateField.text to formatted)
                 },
                 placeholder = {
-                    if (!isTimeFocused && timeField.text.isEmpty()) {
+                    if (!isTimeFocused && time.isEmpty()) {
                         Text("HH:MM", color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 },
