@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -54,8 +55,7 @@ fun CalendarPage(
                 Text(it, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 12.sp)
             }
         }
-
-        val totalBoxes = firstDay + daysInMonth
+        val totalBoxes = ((firstDay + daysInMonth + 6) / 7) * 7
         val weeks = (0 until totalBoxes).chunked(7)
 
         weeks.forEach { week ->
